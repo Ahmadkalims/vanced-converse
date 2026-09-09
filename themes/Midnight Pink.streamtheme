@@ -1,0 +1,139 @@
+{
+  "messageBackground": {
+    "color": "rgba(255, 255, 255, 0.02)",
+    "cornerRadius": 15,
+    "enabled": true,
+    "margin": {
+      "bottom": 10,
+      "left": 0,
+      "right": 0,
+      "top": 10
+    },
+    "outline": {
+      "color": "#FFFFFF",
+      "enabled": false,
+      "glowColor": "#FFFFFF",
+      "size": 0,
+      "type": "solid"
+    },
+    "padding": {
+      "bottom": 12,
+      "left": 16,
+      "right": 16,
+      "top": 12
+    }
+  },
+  "messageText": {
+    "color": "#E5E7EB",
+    "effect": {
+      "shadow": "",
+      "type": "solid"
+    },
+    "font": {
+      "family": "Montserrat Alternates",
+      "size": 16,
+      "weight": 400
+    },
+    "lineSpacing": 0,
+    "margin": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "padding": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    }
+  },
+  "metadata": {
+    "author": "Ahmad Kalim",
+    "description": "Dark acrylic chat overlay with pink glowing usernames and question highlights.",
+    "name": "Midnight Pink",
+    "version": 1
+  },
+  "overlay": {
+    "background": {
+      "color": "rgba(20, 20, 30, 0.4)",
+      "cornerRadius": 20,
+      "effect": {
+        "blur": 15,
+        "saturation": 120,
+        "type": "acrylic"
+      },
+      "gradient": {
+        "angle": 90,
+        "enabled": false,
+        "stops": [],
+        "type": "linear"
+      },
+      "image": {
+        "enabled": false,
+        "fit": "cover",
+        "opacity": 1,
+        "path": ""
+      },
+      "opacity": 1,
+      "outline": {
+        "color": "#FFFFFF",
+        "enabled": false,
+        "glowBlur": 0,
+        "glowColor": "#FFFFFF",
+        "size": 0,
+        "type": "solid"
+      },
+      "type": "acrylic"
+    }
+  },
+  "scrollbar": {
+    "color": "#F9A8D4",
+    "cornerRadius": 4,
+    "glowColor": "#F9A8D4",
+    "interactionMode": "clickthrough_off_hover",
+    "type": "solid",
+    "visible": false,
+    "width": 6
+  },
+  "specialEvents": [],
+  "username": {
+    "color": {
+      "palette": [
+        "#F9A8D4",
+        "#F472B6",
+        "#38BDF8",
+        "#34D399",
+        "#A78BFA",
+        "#FBBF24",
+        "#FB7185",
+        "#4ADE80"
+      ],
+      "type": "persistent_user_color",
+      "value": "#F9A8D4"
+    },
+    "effect": {
+      "shadow": "0 0 4px rgba(249, 168, 212, 0.7)",
+      "type": "glow"
+    },
+    "font": {
+      "family": "Montserrat Alternates",
+      "size": 16,
+      "weight": 600
+    },
+    "lineSpacing": 0,
+    "margin": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "padding": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "placement": "before_message"
+  }
+}

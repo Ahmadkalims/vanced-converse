@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Vanced Converse Settings</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --accent: #c084fc;
+  --accent-soft: #c084fc22;
+  --accent-hover: #d8b4fe;
+  --bg: #202020;
+  --bg-layer: #282828;
+  --bg-card: #2d2d2d;
+  --bg-input: #1e1e1e;
+  --bg-hover: #333333;
+  --text: #e8e8e8;
+  --text-secondary: #999;
+  --text-muted: #666;
+  --border: #3a3a3a;
+  --border-subtle: #333;
+  --success: #4ade80;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,.3);
+  --transition: 150ms cubic-bezier(.4, 0, .2, 1);
+}
+
+html { font-size: 14px; }
+body {
+  font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  height: 100vh;
+  user-select: none;
+}
+
+/* ─── LAYOUT ─── */
+.app { display: flex; height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  overflow-y: auto;
+}
+
+.brand {
+  padding: 0 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #f9a8d4, var(--accent));
+  display: grid; place-items: center;
+  color: #1a0a14; font-weight: 800; font-size: 13px;
+}
+.brand-name { font-weight: 600; font-size: 14px; letter-spacing: -.2px; }
+
+.nav-section {
+  padding: 0 12px;
+  margin-bottom: 4px;
+}
+.nav-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+  padding: 8px 8px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-align: left;
+  position: relative;
+}
+.nav-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-weight: 500;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 16px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+.nav-icon {
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.nav-sub {
+  padding-left: 12px;
+  overflow: hidden;
+  transition: max-height 200ms ease, opacity 200ms ease;
+}
+.nav-sub.collapsed { max-height: 0; opacity: 0; pointer-events: none; }
+.nav-sub.expanded { max-height: 500px; opacity: 1; }
+.nav-sub .nav-item { font-size: 12px; padding: 6px 12px 6px 32px; }
+.nav-chevron {
+  margin-left: auto;
+  font-size: 10px;
+  transition: transform var(--transition);
+}
+.nav-chevron.open { transform: rotate(180deg); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+.status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  margin-right: 6px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .5; }
+}
+.status-text { font-size: 11px; color: var(--text-muted); }
+
+/* ─── MAIN CONTENT ─── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg-layer);
+}
+
+.header {
+  padding: 20px 32px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-shrink: 0;
+  background: var(--bg-layer);
+}
+.header-info h1 {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -.3px;
+  margin-bottom: 2px;
+}
+.header-info p {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.header-actions { display: flex; gap: 8px; align-items: center; }
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 32px 40px;
+  scroll-behavior: smooth;
+}
+.content::-webkit-scrollbar { width: 6px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+.content::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.btn:hover { background: var(--bg-hover); border-color: #555; }
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #1a0a2e;
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+.btn-ghost { border-color: transparent; background: transparent; }
+.btn-ghost:hover { background: var(--bg-hover); }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px 12px;
+}
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.card-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* ─── SETTING ROWS ─── */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  min-height: 48px;
+  border-top: 1px solid #ffffff08;
+  gap: 16px;
+  transition: background var(--transition);
+}
+.setting-row:first-child { border-top: none; }
+.setting-row:hover { background: #ffffff04; }
+
+.setting-info { flex: 1; min-width: 0; }
+.setting-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.setting-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.setting-control { flex-shrink: 0; display: flex; align-items: center; gap: 8px; }
+
+/* ─── TOGGLE SWITCH ─── */
+.toggle {
+  position: relative;
+  width: 40px; height: 22px;
+  flex-shrink: 0;
+}
+.toggle input { display: none; }
+.toggle-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 11px;
+  background: #444;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--transition);
+}
+.toggle input:checked + .toggle-track {
+  background: var(--accent);
+}
+.toggle input:checked + .toggle-track::after {
+  transform: translateX(18px);
+}
+
+/* ─── SELECT ─── */
+.select {
+  min-width: 180px;
+  height: 32px;
+  padding: 0 32px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5l3 3 3-3' stroke='%23999' fill='none' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.select:focus { border-color: var(--accent); }
+
+/* ─── INPUT ─── */
+.input {
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.input:focus { border-color: var(--accent); }
+.input::placeholder { color: var(--text-muted); }
+
+/* ─── SLIDER ─── */
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 220px;
+}
+.slider-group input[type="range"] {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #444;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.slider-group input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--bg-card);
+  box-shadow: 0 0 0 1px var(--accent);
+  cursor: pointer;
+  transition: box-shadow var(--transition);
+}
+.slider-group input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.slider-value {
+  min-width: 48px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+}
+
+/* ─── SEGMENTED CONTROL ─── */
+.seg-control {
+  display: inline-flex;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 2px;
+  gap: 2px;
+}
+.seg-btn {
+  padding: 5px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  white-space: nowrap;
+}
+.seg-btn:hover { color: var(--text); }
+.seg-btn.active {
+  background: var(--accent);
+  color: #1a0a2e;
+  font-weight: 600;
+}
+
+/* ─── COLOR PICKER ─── */
+.color-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+}
+.color-input input[type="color"] {
+  width: 24px; height: 24px;
+  border: none;
+  border-radius: 4px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+.color-input input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+.color-input input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+.color-hex {
+  font-size: 11px;
+  font-family: 'Consolas', 'Courier New', monospace;
+  color: var(--text-secondary);
+  min-width: 60px;
+}
+
+/* ─── SECTION DIVIDER ─── */
+.divider {
+  height: 1px;
+  background: #ffffff08;
+  margin: 4px 20px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  padding: 12px 20px 6px;
+}
+
+/* ─── TOOLTIP ─── */
+.help-icon {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--text-muted);
+  display: inline-grid;
+  place-items: center;
+  font-size: 9px;
+  color: var(--text-muted);
+  cursor: help;
+  position: relative;
+}
+.help-icon .tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  right: -8px;
+  width: 260px;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: #3a3a3a;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 400;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms;
+  z-index: 100;
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.help-icon:hover .tooltip { opacity: 1; }
+
+/* ─── PAGES ─── */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ─── LAYOUT GRID (Theme Loader) ─── */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+}
+
+/* ─── LIVE PREVIEW ─── */
+.preview-panel {
+  position: sticky;
+  top: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-card);
+}
+.preview-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.preview-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .8px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+.preview-live {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--success);
+}
+.preview-live::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.preview-canvas {
+  height: 420px;
+  padding: 16px;
+  display: flex;
+  align-items: flex-end;
+  background: radial-gradient(ellipse at 30% 20%, #c084fc0a, transparent 50%), #1a1a22;
+}
+.preview-overlay {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-xl);
+  background: rgba(20, 20, 30, .5);
+  backdrop-filter: blur(12px);
+  border: 1.5px solid rgba(255,255,255,.1);
+  transition: all var(--transition);
+}
+.preview-msg {
+  margin: 6px 0;
+  padding: 8px 11px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  font-size: 14px;
+  color: #e5e7eb;
+  line-height: 1.4;
+}
+.preview-user {
+  font-weight: 700;
+  color: #f9a8d4;
+  margin-right: 5px;
+  text-shadow: 0 0 6px rgba(249,168,212,.6);
+}
+.preview-highlight {
+  border: 1.5px solid #f472b6;
+  background: rgba(249,168,212,.08);
+}
+.preview-footer {
+  padding: 8px 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ─── THEME GRID ─── */
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.theme-card {
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-input);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.theme-card:hover { border-color: var(--accent); background: var(--bg-hover); }
+.theme-card.active { border-color: var(--accent); background: var(--accent-soft); }
+.theme-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+.theme-card p { font-size: 10px; color: var(--text-muted); margin: 0; }
+
+/* ─── EVENT LIST ─── */
+.event-row {
+  display: grid;
+  grid-template-columns: 1fr 140px 32px;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.event-del {
+  width: 32px; height: 32px;
+  border: 1px solid #f8717133;
+  border-radius: var(--radius-sm);
+  background: #f871711a;
+  color: var(--danger);
+  cursor: pointer;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  transition: all var(--transition);
+}
+.event-del:hover { background: #f8717133; }
+
+/* ─── CODE BLOCK ─── */
+.code-block {
+  padding: 12px 16px;
+  margin: 0 20px 12px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft);
+  border: 1px solid #c084fc22;
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.code-block code {
+  font-family: 'Consolas', monospace;
+  color: var(--accent);
+}
+
+/* ─── HIDDEN ─── */
+.hidden { display: none !important; }
+.disabled { opacity: .35; pointer-events: none; }
+
+/* ─── STATUS PILL ─── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
+}
+.status-pill.success { background: #4ade801a; color: var(--success); }
+.status-pill.warning { background: #fbbf241a; color: var(--warning); }
+
+@media (max-width: 900px) {
+  .two-col { grid-template-columns: 1fr; }
+  .preview-panel { position: relative; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+  <div class="brand">
+    <div class="brand-icon">V</div>
+    <div class="brand-name">Vanced Converse</div>
+  </div>
+
+  <nav class="nav-section">
+    <div class="nav-label">Settings</div>
+    <button class="nav-item active" data-page="general">
+      <span class="nav-icon">⌘</span>General
+    </button>
+    <button class="nav-item" data-page="overlay">
+      <span class="nav-icon">▣</span>Overlay
+    </button>
+    <button class="nav-item" id="nav-appearance">
+      <span class="nav-icon">✦</span>Appearance
+      <span class="nav-chevron open" id="chevron">▾</span>
+    </button>
+  </nav>
+
+  <div class="nav-sub expanded" id="appearance-sub">
+    <button class="nav-item" data-page="theme-loader">Theme Loader</button>
+    <button class="nav-item" data-page="app-overlay">Overlay Style</button>
+    <button class="nav-item" data-page="app-username">Username Text</button>
+    <button class="nav-item" data-page="app-message">Message Text</button>
+    <button class="nav-item" data-page="app-msgbg">Message Background</button>
+    <button class="nav-item" data-page="app-scrollbar">Scrollbar</button>
+    <button class="nav-item" data-page="app-motion">Motion</button>
+    <button class="nav-item" data-page="app-eventstyle">Event Message Style</button>
+  </div>
+
+  <nav class="nav-section">
+    <button class="nav-item" data-page="events">
+      <span class="nav-icon">⚡</span>Events
+    </button>
+    <button class="nav-item" data-page="advanced">
+      <span class="nav-icon">⚙</span>Advanced
+    </button>
+    <button class="nav-item" data-page="about">
+      <span class="nav-icon">ⓘ</span>About
+    </button>
+    <button class="nav-item" data-page="support">
+      <span class="nav-icon">♡</span>Support
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="status-dot"></span>
+    <span class="status-text">Overlay Active</span>
+  </div>
+</aside>
+
+<!-- ─── MAIN ─── -->
+<main class="main">
+  <header class="header">
+    <div class="header-info">
+      <h1 id="page-title">General</h1>
+      <p id="page-desc">Application and chat source settings.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn" id="reset-btn">Reset</button>
+      <button class="btn btn-primary" id="save-btn">Save Changes</button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══════ GENERAL ═══════ -->
+    <div class="page active" id="general">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Application</div>
+          <div class="card-desc">Basic preferences and message retention.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Application Language</div>
+            <div class="setting-hint">Language used by the interface.</div>
+          </div>
+          <div class="setting-control">
+            <select class="select">
+              <option>English</option><option>Hindi</option><option>Arabic</option><option>Spanish</option><option>Japanese</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Start With Windows</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Maximum Messages</div>
+            <div class="setting-hint">Choose whether old messages are removed automatically.</div>
+          </div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="max">
+              <button class="seg-btn active" data-v="unlimited">Unlimited</button>
+              <button class="seg-btn" data-v="limited">Limited</button>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row hidden" id="maxrow">
+          <div class="setting-info">
+            <div class="setting-label">Message Limit</div>
+            <div class="setting-hint">Maximum messages kept in the overlay.</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group">
+              <input id="maxmsgs" type="range" min="10" max="1000" value="200">
+              <span class="slider-value">200</span>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">
+              Auto-scroll
+              <span class="help-icon">?
+                <span class="tooltip">After manual scrolling, the chat waits for the activation duration. If untouched, it returns to the bottom. If disabled, it stays where you left it until you manually reach the bottom.</span>
+              </span>
+            </div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input id="autoscroll" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row" id="actrow">
+          <div class="setting-info">
+            <div class="setting-label">Activation Duration</div>
+            <div class="setting-hint">Inactivity time before returning to the newest message.</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group">
+              <input id="actdur" type="range" min="100" max="5000" step="50" value="2500">
+              <span class="slider-value">2500ms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Chat Sources</div>
+          <div class="card-desc">Current source with future multi-platform expansion.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Platform</div>
+          </div>
+          <div class="setting-control">
+            <select class="select">
+              <option>YouTube Live</option>
+              <option disabled>Twitch — coming soon</option>
+              <option disabled>Kick — coming soon</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">YouTube Stream URL or Video ID</div>
+            <div class="setting-hint">Paste the full live stream link or 11-character video ID.</div>
+          </div>
+          <div class="setting-control">
+            <input class="input" id="yturl" style="width:200px" placeholder="https://youtube.com/live/...">
+            <button class="btn btn-sm" id="update-video-btn">Update</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">YouTube Data API Key</div>
+            <div class="setting-hint">Stored securely in local app configuration.</div>
+          </div>
+          <div class="setting-control">
+            <input class="input" id="ytkey" type="password" style="width:200px" placeholder="API Key">
+            <button class="btn btn-sm btn-ghost" onclick="window.open?.('https://console.cloud.google.com/apis/credentials')">Get Key</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">API Polling Frequency</div>
+            <div class="setting-hint" id="quotalbl">Quota: 240 units/hr (~41.6 hrs streaming per 10k daily quota)</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group">
+              <input id="pollrate" type="range" min="3" max="60" value="15">
+              <span class="slider-value">15s</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ OVERLAY ═══════ -->
+    <div class="page" id="overlay">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Overlay Window</div>
+          <div class="card-desc">Quick settings for the floating window. Opacity and blur are linked to Appearance.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Show Overlay</div></div>
+          <div class="setting-control">
+            <label class="toggle"><input id="qshow" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Always On Top</div></div>
+          <div class="setting-control">
+            <label class="toggle"><input id="qtop" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Clickthrough</div>
+            <div class="setting-hint">Turn OFF to resize overlay window by dragging edges and corners.</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input id="qclick" type="checkbox"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Overlay Opacity</div></div>
+          <div class="setting-control">
+            <div class="slider-group">
+              <input id="qop" type="range" min="0" max="100" value="50">
+              <span class="slider-value">50%</span>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Overlay Blur</div></div>
+          <div class="setting-control">
+            <div class="slider-group">
+              <input id="qblur" type="range" min="0" max="40" value="12">
+              <span class="slider-value">12px</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ THEME LOADER ═══════ -->
+    <div class="page" id="theme-loader">
+      <div class="two-col">
+        <div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Theme Loader</div>
+              <div class="card-desc">Themes are CSS files using <code>:root { --vc-* }</code> custom properties as the shared source of truth.</div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-control" style="flex:1;gap:8px">
+                <select class="select" id="themeselect" style="flex:1">
+                  <option value="Midnight_Pink">Midnight_Pink.css</option>
+                  <option value="Cyberpunk_Neon">Cyberpunk_Neon.css</option>
+                  <option value="Frost_Glass">Frost_Glass.css</option>
+                  <option value="Sunset_Glow">Sunset_Glow.css</option>
+                  <option value="Monochrome_Minimal">Monochrome_Minimal.css</option>
+                  <option value="template">template.css</option>
+                </select>
+                <button class="btn btn-sm" id="loadtheme-btn">Load</button>
+                <button class="btn btn-sm" id="importtheme-btn">Import</button>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info">
+                <div class="setting-label">Save Theme</div>
+                <div class="setting-hint">Save as a new CSS file or update the current theme.</div>
+              </div>
+              <div class="setting-control">
+                <button class="btn btn-sm" id="exporttheme-btn">Export CSS</button>
+                <button class="btn btn-sm btn-primary" id="savetheme-btn">Save Update</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Saved Themes</div>
+              <div class="card-desc">Click any theme card to load and apply immediately.</div>
+            </div>
+            <div style="padding:0 20px 16px">
+              <div class="theme-grid" id="themesgrid">
+                <div class="theme-card active" data-theme="Midnight_Pink"><h4>Midnight Pink</h4><p>Dark acrylic + pink accent.</p></div>
+                <div class="theme-card" data-theme="Cyberpunk_Neon"><h4>Cyberpunk Neon</h4><p>High-contrast cyan & yellow.</p></div>
+                <div class="theme-card" data-theme="Frost_Glass"><h4>Frost Glass</h4><p>Translucent frosted glass.</p></div>
+                <div class="theme-card" data-theme="Sunset_Glow"><h4>Sunset Glow</h4><p>Warm orange & purple gradient.</p></div>
+                <div class="theme-card" data-theme="Monochrome_Minimal"><h4>Monochrome Minimal</h4><p>Clean monochromatic dark.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="preview-panel" id="preview-panel">
+          <div class="preview-header">
+            <span class="preview-label">Live Preview</span>
+            <span class="preview-live">LIVE</span>
+          </div>
+          <div class="preview-canvas">
+            <div class="preview-overlay" id="preview">
+              <div class="preview-msg"><span class="preview-user">Ahmad:</span>Hello everyone! 👋🔥</div>
+              <div class="preview-msg"><span class="preview-user" style="color:#c4b5fd">Sarah:</span>This overlay looks amazing! ✨</div>
+              <div class="preview-msg preview-highlight"><span class="preview-user">Alex:</span>How does this work? 🤔</div>
+            </div>
+          </div>
+          <div class="preview-footer">
+            <span>1280 × 720</span>
+            <span>Direct2D Accelerated</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ OVERLAY STYLE ═══════ -->
+    <div class="page" id="app-overlay">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Overlay Appearance</div>
+          <div class="card-desc">Controls map directly to CSS custom properties and update the overlay live.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Background Effect</div>
+            <div class="setting-hint">Only Solid and Gradient expose color and opacity controls.</div>
+          </div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="obg">
+              <button class="seg-btn" data-v="transparent">Transparent</button>
+              <button class="seg-btn" data-v="solid">Solid</button>
+              <button class="seg-btn" data-v="gradient">Gradient</button>
+              <button class="seg-btn active" data-v="acrylic">Acrylic</button>
+              <button class="seg-btn" data-v="mica">Mica</button>
+              <button class="seg-btn" data-v="glass">Fluent Glass</button>
+            </div>
+          </div>
+        </div>
+        <div id="obgc">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Background Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="ovc" type="color" value="#14141e"><span class="color-hex">#14141E</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Opacity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="ovop" type="range" min="0" max="100" value="50"><span class="slider-value">50%</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Blur</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="ovblur" type="range" min="0" max="40" value="12"><span class="slider-value">12px</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Corner Radius</div></div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="radius" type="range" min="0" max="50" value="20"><span class="slider-value">20px</span></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">Border</div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Overlay Border</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="oborder">
+              <button class="seg-btn" data-v="none">None</button>
+              <button class="seg-btn active" data-v="solid">Solid</button>
+              <button class="seg-btn" data-v="gradient">Gradient</button>
+            </div>
+          </div>
+        </div>
+        <div id="oborderc">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Size</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="obw" type="range" min="1" max="8" value="1"><span class="slider-value">1px</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="obc" type="color" value="#ffffff"><span class="color-hex">#FFFFFF</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Effect</div></div>
+            <div class="setting-control">
+              <div class="seg-control" data-g="obe">
+                <button class="seg-btn active" data-v="none">None</button>
+                <button class="seg-btn" data-v="glow">Glow</button>
+                <button class="seg-btn" data-v="sweep">Light Sweep</button>
+              </div>
+            </div>
+          </div>
+          <div id="obglow" class="hidden">
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Glow Color</div></div>
+              <div class="setting-control">
+                <div class="color-input"><input type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Glow Radius</div></div>
+              <div class="setting-control">
+                <div class="slider-group"><input type="range" min="0" max="40" value="10"><span class="slider-value">10px</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Opacity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="obop" type="range" min="0" max="100" value="20"><span class="slider-value">20%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ USERNAME TEXT ═══════ -->
+    <div class="page" id="app-username">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Username Text</div>
+          <div class="card-desc">Single, Pattern and Persistent palette modes are supported.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Placement</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="up">
+              <button class="seg-btn" data-v="top">On Top</button>
+              <button class="seg-btn active" data-v="inline">Inline</button>
+              <button class="seg-btn" data-v="hidden">Hidden</button>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Font</div></div>
+          <div class="setting-control">
+            <select id="ufont" class="select">
+              <option>Montserrat Alternates</option><option>Segoe UI</option><option>Inter</option><option>Roboto</option><option>Arial</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Font Size</div></div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="usize" type="range" min="8" max="48" value="16"><span class="slider-value">16px</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Text Color Mode</div>
+            <div class="setting-hint">Pattern repeats colors. Persistent assigns and remembers a color per username.</div>
+          </div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="ucm">
+              <button class="seg-btn active" data-v="single">Single</button>
+              <button class="seg-btn" data-v="pattern">Pattern</button>
+              <button class="seg-btn" data-v="persistent">Persistent</button>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Username Color</div></div>
+          <div class="setting-control">
+            <div class="color-input"><input id="ucolor" type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Text Effect</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="ue">
+              <button class="seg-btn" data-v="none">None</button>
+              <button class="seg-btn active" data-v="glow">Glow</button>
+            </div>
+          </div>
+        </div>
+        <div id="uglow">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Radius</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="ugr" type="range" min="0" max="30" value="5"><span class="slider-value">5px</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Intensity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="ugi" type="range" min="0" max="100" value="80"><span class="slider-value">80%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MESSAGE TEXT ═══════ -->
+    <div class="page" id="app-message">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Message Text</div>
+          <div class="card-desc">Independent typography and opacity for chat messages.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Font</div></div>
+          <div class="setting-control">
+            <select class="select" id="mfont">
+              <option>Montserrat Alternates</option><option>Segoe UI</option><option>Inter</option><option>Roboto</option><option>Arial</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Font Size</div></div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="msize" type="range" min="8" max="48" value="16"><span class="slider-value">16px</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Text Color</div></div>
+          <div class="setting-control">
+            <div class="color-input"><input id="mcolor" type="color" value="#e5e7eb"><span class="color-hex">#E5E7EB</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Text Opacity</div></div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="mop" type="range" min="0" max="100" value="100"><span class="slider-value">100%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MESSAGE BACKGROUND ═══════ -->
+    <div class="page" id="app-msgbg">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Message Background</div>
+          <div class="card-desc">Only active styles expose their dependent controls.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Background</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="mbg">
+              <button class="seg-btn" data-v="none">None</button>
+              <button class="seg-btn active" data-v="solid">Solid</button>
+              <button class="seg-btn" data-v="gradient">Gradient</button>
+            </div>
+          </div>
+        </div>
+        <div id="mbgc">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Background Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="mbgcol" type="color" value="#ffffff"><span class="color-hex">#FFFFFF</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Background Opacity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="mbgop" type="range" min="0" max="100" value="5"><span class="slider-value">5%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">Message Border</div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Border</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="mborder">
+              <button class="seg-btn active" data-v="none">None</button>
+              <button class="seg-btn" data-v="solid">Solid</button>
+              <button class="seg-btn" data-v="gradient">Gradient</button>
+            </div>
+          </div>
+        </div>
+        <div id="mborderc" class="hidden">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input type="color" value="#ffffff"><span class="color-hex">#FFFFFF</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Border Opacity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input type="range" min="0" max="100" value="10"><span class="slider-value">10%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Corner Radius</div></div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="mradius" type="range" min="0" max="40" value="13"><span class="slider-value">13px</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SCROLLBAR ═══════ -->
+    <div class="page" id="app-scrollbar">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Scrollbar</div>
+          <div class="card-desc">Configure scrolling and scrollbar appearance.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Enable Scrolling</div></div>
+          <div class="setting-control">
+            <label class="toggle"><input id="scroll" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div id="scrollc">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Show Scrollbar</div></div>
+            <div class="setting-control">
+              <div class="seg-control" data-g="sv">
+                <button class="seg-btn active" data-v="hover">On Hover</button>
+                <button class="seg-btn" data-v="always">Always</button>
+                <button class="seg-btn" data-v="hidden">Hidden</button>
+              </div>
+            </div>
+          </div>
+          <div id="scrollstyle">
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Scrollbar Width</div></div>
+              <div class="setting-control">
+                <div class="slider-group"><input id="sbw" type="range" min="2" max="20" value="6"><span class="slider-value">6px</span></div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Scrollbar Color</div></div>
+              <div class="setting-control">
+                <div class="color-input"><input id="sbc" type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Corner Radius</div></div>
+              <div class="setting-control">
+                <div class="slider-group"><input type="range" min="0" max="20" value="10"><span class="slider-value">10px</span></div>
+              </div>
+            </div>
+            <div class="setting-row">
+              <div class="setting-info"><div class="setting-label">Scrollbar Opacity</div></div>
+              <div class="setting-control">
+                <div class="slider-group"><input type="range" min="0" max="100" value="80"><span class="slider-value">80%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ MOTION ═══════ -->
+    <div class="page" id="app-motion">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Motion</div>
+          <div class="card-desc">None disables and greys out all animation parameters.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">New Message In Animation</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="motion">
+              <button class="seg-btn" data-v="none">None</button>
+              <button class="seg-btn" data-v="fade">Fade</button>
+              <button class="seg-btn active" data-v="slide">Slide Up</button>
+              <button class="seg-btn" data-v="pop">Pop Up</button>
+            </div>
+          </div>
+        </div>
+        <div id="motionc">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Animation Duration</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="motdur" type="range" min="0" max="1000" value="300"><span class="slider-value">300ms</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Animation Ease</div></div>
+            <div class="setting-control">
+              <div class="seg-control">
+                <button class="seg-btn active">Linear</button>
+                <button class="seg-btn">Ease In</button>
+                <button class="seg-btn">Ease Out</button>
+                <button class="seg-btn">Ease In & Out</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ EVENT MESSAGE STYLE ═══════ -->
+    <div class="page" id="app-eventstyle">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Event Message Style</div>
+          <div class="card-desc">Event styling is independently enabled and can later be expanded per event.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Question Event Style</div>
+            <div class="setting-hint">Turn this off to hide all event style controls.</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input id="estyle" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div id="estylec">
+          <div class="divider"></div>
+          <div class="section-title">Question Trigger</div>
+          <div class="setting-row">
+            <div class="setting-info">
+              <div class="setting-label">Trigger Keyword / Character</div>
+              <div class="setting-hint">e.g. <code>?</code> or <code>#question</code></div>
+            </div>
+            <div class="setting-control">
+              <input class="input" id="qtrigger" value="?" style="width:120px">
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Highlight Border Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="qbordercol" type="color" value="#f472b6"><span class="color-hex">#F472B6</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Highlight Background Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="qbgcol" type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ EVENTS ═══════ -->
+    <div class="page" id="events">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Events</div>
+          <div class="card-desc">Default event: Question, activation Anywhere.</div>
+        </div>
+        <div style="padding: 0 20px 16px;">
+          <div id="eventslist">
+            <div class="event-row">
+              <input class="input" value="Question" style="width:100%">
+              <select class="select" style="min-width:auto"><option>Anywhere</option><option>Starts with</option><option>Ends with</option></select>
+              <button class="event-del">×</button>
+            </div>
+          </div>
+          <button class="btn btn-sm" id="add-event">＋ Add Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ ADVANCED ═══════ -->
+    <div class="page" id="advanced">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Advanced</div>
+          <div class="card-desc">Performance and session behavior.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Store All Messages This Session</div>
+            <div class="setting-hint">Keep complete session history beyond the visible overlay buffer.</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Developer Mode</div></div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox"><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">GPU Acceleration (Direct2D / DirectWrite)</div></div>
+          <div class="setting-control">
+            <label class="toggle"><input type="checkbox" checked disabled><span class="toggle-track"></span></label>
+          </div>
+        </div>
+      </div>
+      <div class="code-block">
+        <strong>CSS Variable Architecture</strong> — <code>:root { --vc-* }</code><br>
+        UI controls map directly to CSS custom properties. You can edit themes directly in any code editor inside the <code>themes/</code> directory. Changes are hot-reloaded live with zero restart required.
+      </div>
+    </div>
+
+    <!-- ═══════ ABOUT ═══════ -->
+    <div class="page" id="about">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">About Vanced Converse</div>
+          <div class="card-desc">High-performance native live chat overlay application.</div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Version</div>
+            <div class="setting-hint">1.0.0 Production Native (C++ Direct2D)</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Platform Support</div>
+            <div class="setting-hint">YouTube Live Data API v3 (Twitch & Kick extensible)</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Emoji Engine</div>
+            <div class="setting-hint">Hardware-accelerated Color Emojis (DirectWrite)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════ SUPPORT ═══════ -->
+    <div class="page" id="support">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Support the Developer</div>
+          <div class="card-desc">Help keep development independent and focused on a polished, customizable experience.</div>
+        </div>
+        <div style="padding: 12px 20px 20px;">
+          <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;line-height:1.6">If you enjoy Vanced Converse, supporting development helps fund testing, documentation and future platform integrations. ♡</p>
+          <button class="btn btn-primary" onclick="window.open?.('https://buymeacoffee.com')">☕ Buy Me a Coffee</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</div>
+
+<script>
+// ═══════ PAGE METADATA ═══════
+const meta = {
+  general: ['General', 'Application and chat source settings.'],
+  overlay: ['Overlay', 'Quick settings for the floating overlay window.'],
+  'theme-loader': ['Theme Loader', 'Load, save and manage CSS-based themes.'],
+  'app-overlay': ['Overlay Style', 'Customize the overlay background and border.'],
+  'app-username': ['Username Text', 'Customize viewer name typography and color assignment.'],
+  'app-message': ['Message Text', 'Customize chat message typography.'],
+  'app-msgbg': ['Message Background', 'Customize message cards and borders.'],
+  'app-scrollbar': ['Scrollbar', 'Configure scrolling and scrollbar appearance.'],
+  'app-motion': ['Motion', 'Customize message animations.'],
+  'app-eventstyle': ['Event Message Style', 'Customize special event messages.'],
+  events: ['Events', 'Configure activation rules for special chat events.'],
+  advanced: ['Advanced', 'Advanced performance and session settings.'],
+  about: ['About', 'Application information.'],
+  support: ['Support', 'Support continued development.']
+};
+
+// ═══════ NAVIGATION ═══════
+const pageTitle = document.getElementById('page-title');
+const pageDesc = document.getElementById('page-desc');
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = document.getElementById(id);
+  if (target) target.classList.add('active');
+  if (meta[id]) {
+    pageTitle.textContent = meta[id][0];
+    pageDesc.textContent = meta[id][1];
+  }
+}
+
+document.querySelectorAll('[data-page]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    btn.classList.add('active');
+    showPage(btn.dataset.page);
+  });
+});
+
+// Appearance accordion
+document.getElementById('nav-appearance').addEventListener('click', () => {
+  const sub = document.getElementById('appearance-sub');
+  const chevron = document.getElementById('chevron');
+  sub.classList.toggle('collapsed');
+  sub.classList.toggle('expanded');
+  chevron.classList.toggle('open');
+  if (sub.classList.contains('expanded')) {
+    const firstSub = sub.querySelector('[data-page]');
+    if (firstSub) firstSub.click();
+  }
+});
+
+// ═══════ SEGMENTED CONTROLS ═══════
+function segVal(g) {
+  return document.querySelector(`[data-g="${g}"] .active`)?.dataset?.v;
+}
+
+document.querySelectorAll('.seg-control').forEach(seg => {
+  seg.querySelectorAll('.seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      seg.querySelectorAll('.seg-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      updateConditionals();
+      updatePreview();
+    });
+  });
+});
+
+// ═══════ TOGGLE EVENTS ═══════
+document.querySelectorAll('.toggle input').forEach(t => {
+  t.addEventListener('change', () => { updateConditionals(); updatePreview(); });
+});
+
+// ═══════ CONDITIONAL VISIBILITY ═══════
+function updateConditionals() {
+  const toggle = (id, show) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', !show); };
+  const disable = (id, off) => { const el = document.getElementById(id); if (el) el.classList.toggle('disabled', off); };
+
+  toggle('maxrow', segVal('max') === 'limited');
+  toggle('actrow', document.getElementById('autoscroll')?.checked);
+  toggle('obgc', ['solid','gradient','acrylic','mica','glass'].includes(segVal('obg')));
+  toggle('oborderc', segVal('oborder') !== 'none');
+  toggle('obglow', segVal('obe') === 'glow');
+  toggle('mbgc', segVal('mbg') !== 'none');
+  toggle('mborderc', segVal('mborder') !== 'none');
+  disable('scrollc', !document.getElementById('scroll')?.checked);
+  disable('scrollstyle', segVal('sv') === 'hidden');
+  disable('motionc', segVal('motion') === 'none');
+  toggle('estylec', document.getElementById('estyle')?.checked);
+  toggle('uglow', segVal('ue') === 'glow');
+}
+
+// ═══════ SLIDERS ═══════
+document.querySelectorAll('.slider-group').forEach(group => {
+  const input = group.querySelector('input[type="range"]');
+  const display = group.querySelector('.slider-value');
+  if (!input || !display) return;
+
+  const unit = input.max === '100' ? '%' :
+    ['actdur','motdur'].includes(input.id) ? 'ms' :
+    input.id === 'pollrate' ? 's' :
+    input.id === 'maxmsgs' ? '' : 'px';
+
+  const update = () => {
+    display.textContent = input.value + unit;
+    if (input.id === 'pollrate') updateQuota();
+    updatePreview();
+  };
+
+  input.addEventListener('input', update);
+  update();
+
+  input.addEventListener('wheel', e => {
+    e.preventDefault();
+    const step = +(input.step || 1);
+    input.value = Math.max(+input.min, Math.min(+input.max, +input.value + (e.deltaY < 0 ? step : -step)));
+    input.dispatchEvent(new Event('input'));
+  });
+});
+
+// ═══════ COLOR INPUTS ═══════
+document.querySelectorAll('.color-input').forEach(ci => {
+  const input = ci.querySelector('input[type="color"]');
+  const hex = ci.querySelector('.color-hex');
+  if (!input || !hex) return;
+  const update = () => { hex.textContent = input.value.toUpperCase(); updatePreview(); };
+  input.addEventListener('input', update);
+  update();
+});
+
+// ═══════ QUOTA CALCULATOR ═══════
+function updateQuota() {
+  const rate = +(document.getElementById('pollrate')?.value || 15);
+  const reqs = Math.round(3600 / rate);
+  const hrs = (10000 / reqs).toFixed(1);
+  const lbl = document.getElementById('quotalbl');
+  if (lbl) lbl.textContent = `Quota: ${reqs} units/hr (~${hrs} hrs streaming per 10k daily quota)`;
+}
+
+// ═══════ LIVE PREVIEW ═══════
+function updatePreview() {
+  const p = document.getElementById('preview');
+  if (!p) return;
+
+  const op = (+(document.getElementById('ovop')?.value || 50)) / 100;
+  const r = +(document.getElementById('radius')?.value || 20);
+  const blur = +(document.getElementById('ovblur')?.value || 12);
+  const bgColor = document.getElementById('ovc')?.value || '#14141e';
+  const n = parseInt(bgColor.slice(1), 16);
+  const rgb = `${n >> 16}, ${n >> 8 & 255}, ${n & 255}`;
+
+  p.style.borderRadius = r + 'px';
+  p.style.background = `rgba(${rgb}, ${op})`;
+
+  const bgEffect = segVal('obg');
+  p.style.backdropFilter = ['acrylic','mica','glass'].includes(bgEffect) ? `blur(${blur}px) saturate(1.2)` : 'none';
+
+  const bw = +(document.getElementById('obw')?.value || 1);
+  const bc = document.getElementById('obc')?.value || '#ffffff';
+  const bop = (+(document.getElementById('obop')?.value || 20)) / 100;
+  p.style.borderWidth = segVal('oborder') === 'none' ? '0' : bw + 'px';
+  p.style.borderColor = segVal('oborder') === 'none' ? 'transparent' : bc;
+
+  document.querySelectorAll('.preview-msg').forEach(msg => {
+    msg.style.fontSize = (document.getElementById('msize')?.value || 16) + 'px';
+    msg.style.color = document.getElementById('mcolor')?.value || '#e5e7eb';
+    msg.style.opacity = (+(document.getElementById('mop')?.value || 100)) / 100;
+  });
+
+  document.querySelectorAll('.preview-user').forEach((u, i) => {
+    if (i === 0 || i === 2) {
+      u.style.color = document.getElementById('ucolor')?.value || '#f9a8d4';
+      u.style.fontSize = (document.getElementById('usize')?.value || 16) + 'px';
+    }
+  });
+}
+
+// ═══════ QUICK CONTROLS SYNC ═══════
+const qop = document.getElementById('qop');
+const qblur = document.getElementById('qblur');
+if (qop) qop.addEventListener('input', e => {
+  const ovop = document.getElementById('ovop');
+  if (ovop) { ovop.value = e.target.value; ovop.dispatchEvent(new Event('input')); }
+});
+if (qblur) qblur.addEventListener('input', e => {
+  const ovblur = document.getElementById('ovblur');
+  if (ovblur) { ovblur.value = e.target.value; ovblur.dispatchEvent(new Event('input')); }
+});
+
+// ═══════ ADD/DELETE EVENTS ═══════
+document.getElementById('add-event')?.addEventListener('click', () => {
+  const row = document.createElement('div');
+  row.className = 'event-row';
+  row.innerHTML = `<input class="input" placeholder="Event name" style="width:100%"><select class="select" style="min-width:auto"><option>Anywhere</option><option>Starts with</option><option>Ends with</option></select><button class="event-del">×</button>`;
+  row.querySelector('.event-del').addEventListener('click', () => row.remove());
+  document.getElementById('eventslist')?.appendChild(row);
+});
+document.querySelectorAll('.event-del').forEach(d => d.addEventListener('click', () => d.closest('.event-row')?.remove()));
+
+// ═══════ THEME PRESETS ═══════
+const themePresets = {
+  Midnight_Pink: { ovc:'#14141e', ovop:50, ovblur:15, radius:20, ucolor:'#f9a8d4', mcolor:'#e5e7eb', obc:'#f9a8d4' },
+  Cyberpunk_Neon: { ovc:'#0d1117', ovop:85, ovblur:8, radius:4, ucolor:'#00f0ff', mcolor:'#ffe600', obc:'#00f0ff' },
+  Frost_Glass: { ovc:'#0b1622', ovop:25, ovblur:24, radius:28, ucolor:'#7dd3fc', mcolor:'#f0f9ff', obc:'#38bdf8' },
+  Sunset_Glow: { ovc:'#180d1e', ovop:60, ovblur:16, radius:18, ucolor:'#fb923c', mcolor:'#fdf4ff', obc:'#f472b6' },
+  Monochrome_Minimal: { ovc:'#0a0a0c', ovop:75, ovblur:0, radius:8, ucolor:'#e4e4e7', mcolor:'#d4d4d8', obc:'#3f3f46' }
+};
+
+function applyPreset(name) {
+  const p = themePresets[name];
+  if (!p) return;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) { el.value = v; el.dispatchEvent(new Event('input')); } };
+  setVal('ovc', p.ovc); setVal('ovop', p.ovop); setVal('ovblur', p.ovblur);
+  setVal('radius', p.radius); setVal('ucolor', p.ucolor); setVal('mcolor', p.mcolor); setVal('obc', p.obc);
+  document.querySelectorAll('.theme-card').forEach(t => t.classList.toggle('active', t.dataset.theme === name));
+  document.getElementById('themeselect').value = name;
+  updatePreview();
+  syncLivePreview();
+}
+
+document.querySelectorAll('.theme-card').forEach(t => {
+  t.addEventListener('click', () => {
+    if (t.dataset.theme) {
+      applyPreset(t.dataset.theme);
+      if (window.chrome?.webview) {
+        window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: t.dataset.theme }));
+      }
+    }
+  });
+});
+
+document.getElementById('themeselect')?.addEventListener('change', e => {
+  applyPreset(e.target.value);
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: e.target.value }));
+  }
+});
+
+document.getElementById('loadtheme-btn')?.addEventListener('click', () => {
+  const name = document.getElementById('themeselect')?.value;
+  if (name) {
+    applyPreset(name);
+    if (window.chrome?.webview) {
+      window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name }));
+    }
+  }
+  const btn = document.getElementById('loadtheme-btn');
+  if (btn) { btn.textContent = 'Loaded ✓'; setTimeout(() => btn.textContent = 'Load', 800); }
+});
+
+document.getElementById('importtheme-btn')?.addEventListener('click', () => {
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'import_theme' }));
+  }
+});
+
+document.getElementById('exporttheme-btn')?.addEventListener('click', () => {
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'export_theme' }));
+  }
+});
+
+// ═══════ SAVE / STATUS FEEDBACK ═══════
+document.getElementById('save-btn')?.addEventListener('click', e => {
+  e.target.textContent = 'Saved ✓'; setTimeout(() => e.target.textContent = 'Save Changes', 1200);
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'save_all', ...collectConfig() }));
+  }
+});
+
+document.getElementById('savetheme-btn')?.addEventListener('click', e => {
+  e.target.textContent = 'Updated ✓'; setTimeout(() => e.target.textContent = 'Save Update', 1000);
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'save_all', ...collectConfig() }));
+  }
+});
+
+document.getElementById('reset-btn')?.addEventListener('click', () => {
+  applyPreset('Midnight_Pink');
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: 'Midnight_Pink' }));
+  }
+});
+
+document.getElementById('update-video-btn')?.addEventListener('click', e => {
+  e.target.textContent = '✓ Connected'; setTimeout(() => e.target.textContent = 'Update', 1000);
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'update_video', url: document.getElementById('yturl')?.value || '' }));
+  }
+});
+
+// Real-time live overlay sync
+let previewSyncTimer = null;
+function syncLivePreview() {
+  if (!window.chrome?.webview) return;
+  if (previewSyncTimer) clearTimeout(previewSyncTimer);
+  previewSyncTimer = setTimeout(() => {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'preview_update', ...collectConfig() }));
+  }, 50);
+}
+
+// ═══════ COLLECT CONFIG (for C++ bridge) ═══════
+function collectConfig() {
+  const ovop = (+(document.getElementById('ovop')?.value || 50)) / 100;
+  const ovblur = +(document.getElementById('ovblur')?.value || 12);
+  const radius = +(document.getElementById('radius')?.value || 20);
+  const obw = +(document.getElementById('obw')?.value || 1);
+  const obc = document.getElementById('obc')?.value || '#ffffff';
+  const msize = +(document.getElementById('msize')?.value || 16);
+  const ucolor = document.getElementById('ucolor')?.value || '#f9a8d4';
+  const mcolor = document.getElementById('mcolor')?.value || '#e5e7eb';
+  const ovc = document.getElementById('ovc')?.value || '#14141e';
+  const yturl = document.getElementById('yturl')?.value || '';
+  const ytkey = document.getElementById('ytkey')?.value || '';
+  const pollrate = +(document.getElementById('pollrate')?.value || 15);
+  const maxmsgs = +(document.getElementById('maxmsgs')?.value || 200);
+  const clickthrough = document.getElementById('qclick')?.checked || false;
+  const alwaysontop = document.getElementById('qtop')?.checked ?? true;
+  const showoverlay = document.getElementById('qshow')?.checked ?? true;
+
+  return {
+    video_id: yturl,
+    api_key: ytkey,
+    poll_interval_sec: pollrate,
+    max_messages: maxmsgs,
+    click_through: clickthrough,
+    always_on_top: alwaysontop,
+    show_overlay: showoverlay,
+    overlay_opacity: ovop,
+    overlay_blur: ovblur,
+    overlay_radius: radius,
+    border_width: obw,
+    border_color: obc,
+    font_size: msize,
+    username_color: ucolor,
+    message_color: mcolor,
+    bg_color: ovc,
+    theme: {
+      overlay_opacity: ovop,
+      overlay_blur: ovblur,
+      overlay_radius: radius,
+      border_width: obw,
+      border_color: obc,
+      font_size: msize,
+      username_color: ucolor,
+      message_color: mcolor,
+      bg_color: ovc
+    }
+  };
+}
+
+// ═══════ RECEIVE CONFIG FROM C++ ═══════
+function applyConfig(cfg) {
+  if (!cfg) return;
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) { el.value = v; el.dispatchEvent(new Event('input')); } };
+  const setCheck = (id, v) => { const el = document.getElementById(id); if (el) { el.checked = !!v; el.dispatchEvent(new Event('change')); } };
+
+  if (cfg.video_id != null) setVal('yturl', cfg.video_id);
+  if (cfg.api_key != null) setVal('ytkey', cfg.api_key);
+  if (cfg.poll_interval_sec != null) setVal('pollrate', cfg.poll_interval_sec);
+  if (cfg.max_messages != null) setVal('maxmsgs', cfg.max_messages);
+  if (cfg.click_through != null) setCheck('qclick', cfg.click_through);
+  if (cfg.always_on_top != null) setCheck('qtop', cfg.always_on_top);
+  if (cfg.show_overlay != null) setCheck('qshow', cfg.show_overlay);
+
+  if (cfg.active_theme) {
+    const ts = document.getElementById('themeselect');
+    if (ts) {
+      for (let i = 0; i < ts.options.length; i++) {
+        if (ts.options[i].value === cfg.active_theme || ts.options[i].text.includes(cfg.active_theme)) {
+          ts.selectedIndex = i;
+          break;
+        }
+      }
+    }
+    document.querySelectorAll('.theme-card').forEach(tc => {
+      tc.classList.toggle('active', tc.dataset.theme === cfg.active_theme);
+    });
+  }
+
+  const th = cfg.theme || cfg;
+  if (th) {
+    if (th.overlay_opacity != null) {
+      const pct = Math.round(th.overlay_opacity * 100);
+      setVal('ovop', pct);
+      setVal('qop', pct);
+    }
+    if (th.overlay_blur != null) {
+      setVal('ovblur', th.overlay_blur);
+      setVal('qblur', th.overlay_blur);
+    }
+    if (th.overlay_radius != null) setVal('radius', th.overlay_radius);
+    if (th.border_width != null) setVal('obw', th.border_width);
+    if (th.border_color) setVal('obc', th.border_color);
+    if (th.font_size != null) setVal('msize', th.font_size);
+    if (th.username_color) setVal('ucolor', th.username_color);
+    if (th.message_color) setVal('mcolor', th.message_color);
+    if (th.bg_color) setVal('ovc', th.bg_color);
+  }
+
+  updateConditionals();
+  updatePreview();
+}
+
+// Listen for C++ messages
+if (window.chrome?.webview) {
+  window.chrome.webview.addEventListener('message', e => {
+    try {
+      const data = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
+      if (data.type === 'apply_config') applyConfig(data.config);
+      if (data.type === 'status') {
+        const sp = document.querySelector('.status-text');
+        if (sp && data.text) sp.textContent = data.text;
+      }
+    } catch (err) {}
+  });
+}
+
+// ═══════ INIT ═══════
+updateConditionals();
+updatePreview();
+updateQuota();
+</script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+/* ==========================================================================
+   VANCED CONVERSE THEME
+   ========================================================================== */
+
+/* Theme Metadata
+Theme Name: Sunset Glow
+Author: Vibrant Stream
+Version: 1.0.0
+Description: Warm amber, crimson, and golden hour acrylic aesthetic.
+*/
+
+:root {
+    --vc-overlay-bg-color: #1c1018;
+    --vc-overlay-bg-opacity: 0.55;
+    --vc-overlay-bg-blur: 20px;
+    --vc-overlay-radius: 18px;
+
+    --vc-overlay-border-color: #fb923c;
+    --vc-overlay-border-opacity: 0.35;
+    --vc-overlay-border-width: 1.5px;
+
+    --vc-overlay-glow-color: #fb923c;
+    --vc-overlay-glow-radius: 10px;
+    --vc-overlay-glow-intensity: 0.5;
+
+    --vc-overlay-pad-top: 16px;
+    --vc-overlay-pad-bottom: 16px;
+    --vc-overlay-pad-left: 16px;
+    --vc-overlay-pad-right: 16px;
+
+    --vc-username-font: "Outfit", sans-serif;
+    --vc-username-size: 16px;
+    --vc-username-weight: 600;
+    --vc-username-color: #f97316;
+
+    --vc-username-glow-color: #fb923c;
+    --vc-username-glow-radius: 4px;
+    --vc-username-glow-intensity: 0.6;
+
+    --vc-message-font: "Outfit", sans-serif;
+    --vc-message-size: 16px;
+    --vc-message-weight: 400;
+    --vc-message-color: #fef2f2;
+    --vc-message-opacity: 1.0;
+    --vc-message-line-spacing: 4px;
+
+    --vc-message-bg-color: rgba(251, 146, 60, 0.05);
+    --vc-message-bg-opacity: 0.05;
+    --vc-message-radius: 14px;
+
+    --vc-message-border-color: rgba(251, 146, 60, 0.15);
+    --vc-message-border-opacity: 0.15;
+    --vc-message-border-width: 1px;
+    --vc-message-border-radius: 14px;
+
+    --vc-scrollbar-width: 6px;
+    --vc-scrollbar-thumb-color: #fb923c;
+    --vc-scrollbar-thumb-hover: #f43f5e;
+    --vc-scrollbar-track-color: rgba(255, 255, 255, 0.05);
+    --vc-scrollbar-radius: 3px;
+    --vc-scrollbar-opacity: 0.45;
+
+    --vc-motion-duration: 320ms;
+    --vc-motion-ease: cubic-bezier(0, 0, 0.2, 1);
+
+    --vc-event-question-bg: rgba(251, 146, 60, 0.14);
+    --vc-event-question-bg-opacity: 0.14;
+    --vc-event-question-border: #fb923c;
+    --vc-event-question-border-width: 2px;
+    --vc-event-question-user-color: #fb923c;
+}

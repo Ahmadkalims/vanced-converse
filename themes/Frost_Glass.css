@@ -1,0 +1,71 @@
+/* ==========================================================================
+   VANCED CONVERSE THEME
+   ========================================================================== */
+
+/* Theme Metadata
+Theme Name: Frost Glass
+Author: Nordic Glass
+Version: 1.0.0
+Description: Clean frosted mica glass with ice cyan tones and subtle shadows.
+*/
+
+:root {
+    --vc-overlay-bg-color: #0f172a;
+    --vc-overlay-bg-opacity: 0.50;
+    --vc-overlay-bg-blur: 25px;
+    --vc-overlay-radius: 16px;
+
+    --vc-overlay-border-color: #38bdf8;
+    --vc-overlay-border-opacity: 0.30;
+    --vc-overlay-border-width: 1.5px;
+
+    --vc-overlay-glow-color: #38bdf8;
+    --vc-overlay-glow-radius: 8px;
+    --vc-overlay-glow-intensity: 0.4;
+
+    --vc-overlay-pad-top: 16px;
+    --vc-overlay-pad-bottom: 16px;
+    --vc-overlay-pad-left: 16px;
+    --vc-overlay-pad-right: 16px;
+
+    --vc-username-font: "Inter", sans-serif;
+    --vc-username-size: 15px;
+    --vc-username-weight: 600;
+    --vc-username-color: #38bdf8;
+
+    --vc-username-glow-color: #38bdf8;
+    --vc-username-glow-radius: 4px;
+    --vc-username-glow-intensity: 0.5;
+
+    --vc-message-font: "Inter", sans-serif;
+    --vc-message-size: 15px;
+    --vc-message-weight: 400;
+    --vc-message-color: #f1f5f9;
+    --vc-message-opacity: 1.0;
+    --vc-message-line-spacing: 4px;
+
+    --vc-message-bg-color: rgba(255, 255, 255, 0.04);
+    --vc-message-bg-opacity: 0.04;
+    --vc-message-radius: 12px;
+
+    --vc-message-border-color: rgba(255, 255, 255, 0.12);
+    --vc-message-border-opacity: 0.12;
+    --vc-message-border-width: 1px;
+    --vc-message-border-radius: 12px;
+
+    --vc-scrollbar-width: 6px;
+    --vc-scrollbar-thumb-color: #38bdf8;
+    --vc-scrollbar-thumb-hover: #818cf8;
+    --vc-scrollbar-track-color: rgba(255, 255, 255, 0.05);
+    --vc-scrollbar-radius: 3px;
+    --vc-scrollbar-opacity: 0.40;
+
+    --vc-motion-duration: 300ms;
+    --vc-motion-ease: cubic-bezier(0, 0, 0.2, 1);
+
+    --vc-event-question-bg: rgba(56, 189, 248, 0.12);
+    --vc-event-question-bg-opacity: 0.12;
+    --vc-event-question-border: #38bdf8;
+    --vc-event-question-border-width: 2px;
+    --vc-event-question-user-color: #38bdf8;
+}

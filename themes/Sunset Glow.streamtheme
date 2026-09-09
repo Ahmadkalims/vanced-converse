@@ -1,0 +1,136 @@
+{
+  "messageBackground": {
+    "color": "rgba(255, 255, 255, 0.04)",
+    "cornerRadius": 14,
+    "enabled": true,
+    "margin": {
+      "bottom": 10,
+      "left": 0,
+      "right": 0,
+      "top": 10
+    },
+    "outline": {
+      "color": "#FFFFFF",
+      "enabled": false,
+      "glowColor": "#FFFFFF",
+      "size": 0,
+      "type": "solid"
+    },
+    "padding": {
+      "bottom": 12,
+      "left": 16,
+      "right": 16,
+      "top": 12
+    }
+  },
+  "messageText": {
+    "color": "#FFF1F2",
+    "effect": {
+      "shadow": "",
+      "type": "solid"
+    },
+    "font": {
+      "family": "Segoe UI",
+      "size": 15,
+      "weight": 400
+    },
+    "lineSpacing": 0,
+    "margin": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "padding": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    }
+  },
+  "metadata": {
+    "author": "Antigravity",
+    "description": "Warm orange & purple dusk gradient aesthetic",
+    "name": "Sunset Glow",
+    "version": 1
+  },
+  "overlay": {
+    "background": {
+      "color": "#1F121E",
+      "cornerRadius": 20,
+      "effect": {
+        "blur": 18,
+        "saturation": 120,
+        "type": "acrylic"
+      },
+      "gradient": {
+        "angle": 90,
+        "enabled": false,
+        "stops": [],
+        "type": "linear"
+      },
+      "image": {
+        "enabled": false,
+        "fit": "cover",
+        "opacity": 1,
+        "path": ""
+      },
+      "opacity": 0.5,
+      "outline": {
+        "color": "#FFFFFF",
+        "enabled": false,
+        "glowBlur": 0,
+        "glowColor": "#FFFFFF",
+        "size": 0,
+        "type": "solid"
+      },
+      "type": "acrylic"
+    }
+  },
+  "scrollbar": {
+    "color": "#F9A8D4",
+    "cornerRadius": 4,
+    "glowColor": "#F9A8D4",
+    "interactionMode": "clickthrough_off_hover",
+    "type": "solid",
+    "visible": false,
+    "width": 8
+  },
+  "specialEvents": [],
+  "username": {
+    "color": {
+      "palette": [
+        "#FB923C",
+        "#F472B6",
+        "#E879F9",
+        "#FBBF24",
+        "#F87171"
+      ],
+      "type": "persistent_user_color",
+      "value": "#F9A8D4"
+    },
+    "effect": {
+      "shadow": "0 0 5px rgba(251, 146, 60, 0.7)",
+      "type": "glow"
+    },
+    "font": {
+      "family": "Segoe UI",
+      "size": 16,
+      "weight": 600
+    },
+    "lineSpacing": 0,
+    "margin": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "padding": {
+      "bottom": 0,
+      "left": 0,
+      "right": 0,
+      "top": 0
+    },
+    "placement": "before_message"
+  }
+}

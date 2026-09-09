@@ -1,0 +1,183 @@
+/* ==========================================================================
+   VANCED CONVERSE THEME TEMPLATE
+   This is a fully commented reference template explaining all CSS variables.
+   You can copy this file, modify values, and drop it into the Themes tab.
+   ========================================================================== */
+
+/* Theme Metadata
+Theme Name: My Custom Theme
+Author: Your Name
+Version: 1.0.0
+Description: Detailed description of the theme visual style and mood.
+*/
+
+:root {
+    /* ======================================================================
+       1. OVERLAY CONTAINER
+       ====================================================================== */
+    /* Base background color tint (Hex, RGB, or RGBA) */
+    --vc-overlay-bg-color: #14141e;
+
+    /* Opacity of the overlay backdrop (0.00 = 100% transparent, 1.00 = 100% opaque) */
+    --vc-overlay-bg-opacity: 0.40;
+
+    /* Gaussian blur radius in pixels (used for Acrylic, Mica, and Liquid Glass materials) */
+    --vc-overlay-bg-blur: 15px;
+
+    /* Global corner radius of the desktop overlay */
+    --vc-overlay-radius: 20px;
+
+    /* Outer border outline color */
+    --vc-overlay-border-color: #ffffff;
+
+    /* Outer border outline opacity */
+    --vc-overlay-border-opacity: 0.15;
+
+    /* Outer border outline thickness */
+    --vc-overlay-border-width: 1.5px;
+
+    /* Outer container edge glow color */
+    --vc-overlay-glow-color: #f9a8d4;
+
+    /* Outer container edge glow spread radius */
+    --vc-overlay-glow-radius: 8px;
+
+    /* Outer container edge glow intensity multiplier (0.0 to 1.0) */
+    --vc-overlay-glow-intensity: 0.5;
+
+    /* Container internal paddings */
+    --vc-overlay-pad-top: 16px;
+    --vc-overlay-pad-bottom: 16px;
+    --vc-overlay-pad-left: 16px;
+    --vc-overlay-pad-right: 16px;
+
+
+    /* ======================================================================
+       2. USERNAME TYPOGRAPHY & COLORS
+       ====================================================================== */
+    /* Font family for author usernames */
+    --vc-username-font: "Montserrat Alternates", sans-serif;
+
+    /* Font size for usernames */
+    --vc-username-size: 16px;
+
+    /* Font weight (400 = Regular, 600 = SemiBold, 700 = Bold) */
+    --vc-username-weight: 600;
+
+    /* Primary single username color */
+    --vc-username-color: #f9a8d4;
+
+    /* Username text glow color (kept strictly isolated from emojis) */
+    --vc-username-glow-color: #f9a8d4;
+
+    /* Username text glow radius */
+    --vc-username-glow-radius: 4px;
+
+    /* Username text glow intensity */
+    --vc-username-glow-intensity: 0.7;
+
+
+    /* ======================================================================
+       3. MESSAGE TEXT
+       ====================================================================== */
+    /* Font family for message content */
+    --vc-message-font: "Montserrat Alternates", sans-serif;
+
+    /* Message body text size */
+    --vc-message-size: 16px;
+
+    /* Message font weight */
+    --vc-message-weight: 400;
+
+    /* Message body text color */
+    --vc-message-color: #e5e7eb;
+
+    /* Message body opacity */
+    --vc-message-opacity: 1.0;
+
+    /* Line spacing / line height gap */
+    --vc-message-line-spacing: 4px;
+
+    /* Message text glow */
+    --vc-message-glow-color: #e5e7eb;
+    --vc-message-glow-radius: 0px;
+
+
+    /* ======================================================================
+       4. MESSAGE BUBBLE CARD BACKGROUND & BORDERS
+       ====================================================================== */
+    /* Background color of individual chat message cards */
+    --vc-message-bg-color: rgba(255, 255, 255, 0.03);
+
+    /* Background opacity of message cards */
+    --vc-message-bg-opacity: 0.03;
+
+    /* Corner radius of message cards */
+    --vc-message-radius: 15px;
+
+    /* Message card internal padding */
+    --vc-message-pad-top: 12px;
+    --vc-message-pad-bottom: 12px;
+    --vc-message-pad-left: 16px;
+    --vc-message-pad-right: 16px;
+
+    /* Message card vertical margins */
+    --vc-message-margin-top: 6px;
+    --vc-message-margin-bottom: 6px;
+
+    /* Message card border */
+    --vc-message-border-color: rgba(255, 255, 255, 0.10);
+    --vc-message-border-opacity: 0.10;
+    --vc-message-border-width: 1px;
+    --vc-message-border-radius: 15px;
+    --vc-message-border-glow-color: #f9a8d4;
+    --vc-message-border-glow-radius: 4px;
+    --vc-message-border-glow-intensity: 0.5;
+
+
+    /* ======================================================================
+       5. SCROLLBAR
+       ====================================================================== */
+    /* Width of the scrollbar thumb in pixels */
+    --vc-scrollbar-width: 6px;
+
+    /* Scrollbar thumb base color */
+    --vc-scrollbar-thumb-color: #f472b6;
+
+    /* Scrollbar thumb hover color */
+    --vc-scrollbar-thumb-hover: #f472b6;
+
+    /* Scrollbar track background color */
+    --vc-scrollbar-track-color: rgba(255, 255, 255, 0.05);
+
+    /* Corner radius of scrollbar thumb */
+    --vc-scrollbar-radius: 3px;
+
+    /* Scrollbar thumb opacity */
+    --vc-scrollbar-opacity: 0.40;
+
+
+    /* ======================================================================
+       6. MOTION & ANIMATION
+       ====================================================================== */
+    /* Message entrance animation duration */
+    --vc-motion-duration: 300ms;
+
+    /* Animation timing function (linear, cubic-bezier(...), ease-in, ease-out) */
+    --vc-motion-ease: cubic-bezier(0, 0, 0.2, 1);
+
+
+    /* ======================================================================
+       7. SPECIAL EVENT OVERRIDES
+       ====================================================================== */
+    /* Background for messages containing "?" */
+    --vc-event-question-bg: rgba(249, 168, 212, 0.12);
+    --vc-event-question-bg-opacity: 0.12;
+
+    /* Border color for question highlight */
+    --vc-event-question-border: #f472b6;
+    --vc-event-question-border-width: 2px;
+
+    /* Username color for question message author */
+    --vc-event-question-user-color: #f472b6;
+}

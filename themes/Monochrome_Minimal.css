@@ -1,0 +1,71 @@
+/* ==========================================================================
+   VANCED CONVERSE THEME
+   ========================================================================== */
+
+/* Theme Metadata
+Theme Name: Monochrome Minimal
+Author: Minimalist
+Version: 1.0.0
+Description: Zero distractions: ultra clean grayscale acrylic with pure white typography.
+*/
+
+:root {
+    --vc-overlay-bg-color: #121214;
+    --vc-overlay-bg-opacity: 0.70;
+    --vc-overlay-bg-blur: 0px;
+    --vc-overlay-radius: 12px;
+
+    --vc-overlay-border-color: rgba(255, 255, 255, 0.15);
+    --vc-overlay-border-opacity: 0.15;
+    --vc-overlay-border-width: 1px;
+
+    --vc-overlay-glow-color: transparent;
+    --vc-overlay-glow-radius: 0px;
+    --vc-overlay-glow-intensity: 0.0;
+
+    --vc-overlay-pad-top: 16px;
+    --vc-overlay-pad-bottom: 16px;
+    --vc-overlay-pad-left: 16px;
+    --vc-overlay-pad-right: 16px;
+
+    --vc-username-font: "Inter", sans-serif;
+    --vc-username-size: 15px;
+    --vc-username-weight: 600;
+    --vc-username-color: #ffffff;
+
+    --vc-username-glow-color: transparent;
+    --vc-username-glow-radius: 0px;
+    --vc-username-glow-intensity: 0.0;
+
+    --vc-message-font: "Inter", sans-serif;
+    --vc-message-size: 15px;
+    --vc-message-weight: 400;
+    --vc-message-color: #e4e4e7;
+    --vc-message-opacity: 1.0;
+    --vc-message-line-spacing: 4px;
+
+    --vc-message-bg-color: rgba(255, 255, 255, 0.02);
+    --vc-message-bg-opacity: 0.02;
+    --vc-message-radius: 8px;
+
+    --vc-message-border-color: rgba(255, 255, 255, 0.08);
+    --vc-message-border-opacity: 0.08;
+    --vc-message-border-width: 1px;
+    --vc-message-border-radius: 8px;
+
+    --vc-scrollbar-width: 4px;
+    --vc-scrollbar-thumb-color: #71717a;
+    --vc-scrollbar-thumb-hover: #a1a1aa;
+    --vc-scrollbar-track-color: rgba(255, 255, 255, 0.03);
+    --vc-scrollbar-radius: 2px;
+    --vc-scrollbar-opacity: 0.40;
+
+    --vc-motion-duration: 200ms;
+    --vc-motion-ease: linear;
+
+    --vc-event-question-bg: rgba(255, 255, 255, 0.08);
+    --vc-event-question-bg-opacity: 0.08;
+    --vc-event-question-border: #ffffff;
+    --vc-event-question-border-width: 1.5px;
+    --vc-event-question-user-color: #ffffff;
+}

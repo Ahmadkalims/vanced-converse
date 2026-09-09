@@ -1,0 +1,24 @@
+# Build artifacts
+*.o
+*.obj
+*.res.o
+*.exe
+*.log
+*.tmp
+
+# Temporary files
+*.zip
+*.tar.gz
+webview2_temp/
+webview2_sdk/
+
+# Runtime data
+WebView2Data/
+EBWebView/
+
+# IDE & OS
+.vscode/
+.vs/
+.idea/
+Thumbs.db
+[Dd]esktop.ini

@@ -1,0 +1,58 @@
+{
+  "kind": "youtube#liveChatMessageListResponse",
+  "etag": "msg_etag_789",
+  "nextPageToken": "NEXT_PAGE_TOKEN_ABC123",
+  "pollingIntervalMillis": 15000,
+  "pageInfo": {
+    "totalResults": 2,
+    "resultsPerPage": 2
+  },
+  "items": [
+    {
+      "kind": "youtube#liveChatMessage",
+      "etag": "item_etag_1",
+      "id": "LCC.msg_id_001",
+      "snippet": {
+        "type": "textMessageEvent",
+        "liveChatId": "Cg0KC3Z0TC1KcmxoVDJn",
+        "authorChannelId": "UC_user_1",
+        "publishedAt": "2026-08-24T12:00:00.000Z",
+        "hasDisplayContent": true,
+        "displayMessage": "Hello everyone in the live stream!"
+      },
+      "authorDetails": {
+        "channelId": "UC_user_1",
+        "channelUrl": "http://www.youtube.com/channel/UC_user_1",
+        "displayName": "AliceGamer",
+        "profileImageUrl": "https://example.com/alice.png",
+        "isVerified": false,
+        "isChatOwner": false,
+        "isChatSponsor": false,
+        "isChatModerator": false
+      }
+    },
+    {
+      "kind": "youtube#liveChatMessage",
+      "etag": "item_etag_2",
+      "id": "LCC.msg_id_002",
+      "snippet": {
+        "type": "textMessageEvent",
+        "liveChatId": "Cg0KC3Z0TC1KcmxoVDJn",
+        "authorChannelId": "UC_user_2",
+        "publishedAt": "2026-08-24T12:00:05.000Z",
+        "hasDisplayContent": true,
+        "displayMessage": "#question How do I customize the backdrop blur?"
+      },
+      "authorDetails": {
+        "channelId": "UC_user_2",
+        "channelUrl": "http://www.youtube.com/channel/UC_user_2",
+        "displayName": "BobDev",
+        "profileImageUrl": "https://example.com/bob.png",
+        "isVerified": true,
+        "isChatOwner": false,
+        "isChatSponsor": false,
+        "isChatModerator": true
+      }
+    }
+  ]
+}

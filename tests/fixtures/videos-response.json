@@ -1,0 +1,19 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "etag_test_123",
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "video_etag_456",
+      "id": "vtL-JrlhT2g",
+      "liveStreamingDetails": {
+        "actualStartTime": "2026-08-24T10:00:00Z",
+        "activeLiveChatId": "Cg0KC3Z0TC1KcmxoVDJn"
+      }
+    }
+  ],
+  "pageInfo": {
+    "totalResults": 1,
+    "resultsPerPage": 1
+  }
+}
