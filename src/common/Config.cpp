@@ -128,7 +128,7 @@ bool ConfigManager::load() {
     }
 
     current_config_.video_id = root["video_id"].as_string("");
-    current_config_.poll_interval_sec = root["poll_interval_sec"].as_int(15);
+    current_config_.poll_interval_sec = root["poll_interval_sec"].as_int(10);
     current_config_.click_through = root["click_through"].as_bool(false);
     current_config_.always_on_top = root["always_on_top"].as_bool(true);
     current_config_.show_overlay = root["show_overlay"].as_bool(true);

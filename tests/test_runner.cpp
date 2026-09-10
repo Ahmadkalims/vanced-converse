@@ -283,7 +283,7 @@ int run_gui_test_panel(HINSTANCE hInstance) {
 
     CreateWindowW(L"STATIC", L"Adjustable Polling Rate:", WS_CHILD | WS_VISIBLE,
         30, 265, 170, 18, g_h_main, NULL, hInstance, NULL);
-    g_h_lbl_poll_val = CreateWindowW(L"STATIC", L"15s", WS_CHILD | WS_VISIBLE | SS_RIGHT,
+    g_h_lbl_poll_val = CreateWindowW(L"STATIC", L"10s", WS_CHILD | WS_VISIBLE | SS_RIGHT,
         210, 265, 50, 18, g_h_main, (HMENU)IDC_TEST_LBL_POLL_VAL, hInstance, NULL);
 
     g_h_slider_poll = CreateWindowExW(0, TRACKBAR_CLASSW, L"", WS_CHILD | WS_VISIBLE | TBS_HORZ | TBS_AUTOTICKS,

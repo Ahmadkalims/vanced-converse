@@ -14,7 +14,7 @@
 struct AppConfig {
     std::string api_key;           // Stored securely via Windows DPAPI; never plaintext on disk
     std::string video_id;          // Active YouTube video ID or stream URL
-    int poll_interval_sec = 15;    // API polling frequency in seconds
+    int poll_interval_sec = 10;    // API polling frequency in seconds (default 10s: 360 req/hr = 1800 units/hr)
     
     // Active Theme
     std::string active_theme_name = "Midnight Pink";

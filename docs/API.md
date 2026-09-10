@@ -37,7 +37,7 @@ The application connects directly to Google's YouTube Data API v3 to discover li
   - `part`: `snippet,authorDetails`
   - `key`: `<apiKey>`
   - `pageToken`: `<nextPageToken>` (optional; omitted on initial request)
-- **Quota Cost:** 1 unit per request (or 5 units depending on parts requested).
+- **Quota Cost:** **5 units per request** (standard YouTube Data API v3 cost for `liveChatMessages/list`).
 - **Success Response Structure:**
   ```json
   {
@@ -91,14 +91,17 @@ The application connects directly to Google's YouTube Data API v3 to discover li
 ```
 
 ## 4. Quota Consumption & Constraints
-- **Default Daily Quota:** 10,000 units per project per day.
-- **Consumption Rate Analysis:**
-  - At 1 request / 5s: 720 units/hour -> Quota exhausted in **~13.8 hours**.
-  - At 1 request / 15s: 240 units/hour -> Quota exhausted in **~41.6 hours**.
-  - At 1 request / 30s: 120 units/hour -> Quota exhausted in **~83.3 hours**.
+- **Default Daily Quota:** 10,000 units per project per day (resets daily at 00:00 Pacific Time / PT).
+- **Consumption Rate Analysis (at 5 units per liveChatMessages.list call):**
+  - At 1 request / 5s: 720 req/hr × 5 units = **3,600 units/hour** -> Quota exhausted in **~2.8 hours**.
+  - At 1 request / 10s: 360 req/hr × 5 units = **1,800 units/hour** -> Quota exhausted in **~5.5 hours**.
+  - At 1 request / 15s: 240 req/hr × 5 units = **1,200 units/hour** -> Quota exhausted in **~8.3 hours**.
+  - At 1 request / 20s: 180 req/hr × 5 units = **900 units/hour** -> Quota exhausted in **~11.1 hours**.
+  - At 1 request / 30s: 120 req/hr × 5 units = **600 units/hour** -> Quota exhausted in **~16.7 hours**.
+  - At 1 request / 60s: 60 req/hr × 5 units = **300 units/hour** -> Quota exhausted in **~33.3 hours**.
 - **Rules for Quota Optimization:**
   1. Never poll faster than `pollingIntervalMillis` returned by the API (hard limit enforced by Google).
-  2. Enforce a minimum polling floor (e.g. 3,000ms minimum, 10,000ms recommended).
+  2. Default polling interval is **10 seconds** (recommended balance of responsiveness and ~5.5 streaming hours per day).
   3. Pause polling when overlay window is hidden or minimized.
   4. Implement exponential backoff on HTTP 403 (Quota Exceeded) and HTTP 5xx errors.
 

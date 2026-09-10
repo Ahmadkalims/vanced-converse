@@ -48,7 +48,7 @@ public:
 private:
     std::string api_key_;
     std::string video_id_;
-    int user_poll_interval_sec_ = 15;
+    int user_poll_interval_sec_ = 10;
     
     std::string active_live_chat_id_;
     std::string next_page_token_;

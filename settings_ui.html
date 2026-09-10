@@ -867,12 +867,12 @@ body {
         <div class="setting-row">
           <div class="setting-info">
             <div class="setting-label">API Polling Frequency</div>
-            <div class="setting-hint" id="quotalbl">Quota: 240 units/hr (~41.6 hrs streaming per 10k daily quota)</div>
+            <div class="setting-hint" id="quotalbl">Quota: 1,800 units/hr (~5.5 hrs streaming per 10k daily quota at 5 units/call)</div>
           </div>
           <div class="setting-control">
             <div class="slider-group">
-              <input id="pollrate" type="range" min="3" max="60" value="15">
-              <span class="slider-value">15s</span>
+              <input id="pollrate" type="range" min="3" max="60" value="10">
+              <span class="slider-value">10s</span>
             </div>
           </div>
         </div>
@@ -1733,11 +1733,12 @@ document.querySelectorAll('.color-input').forEach(ci => {
 
 // ═══════ QUOTA CALCULATOR ═══════
 function updateQuota() {
-  const rate = +(document.getElementById('pollrate')?.value || 15);
+  const rate = +(document.getElementById('pollrate')?.value || 10);
   const reqs = Math.round(3600 / rate);
-  const hrs = (10000 / reqs).toFixed(1);
+  const unitsPerHour = reqs * 5; // YouTube Data API v3 liveChatMessages.list costs 5 quota units per call
+  const hrs = (10000 / unitsPerHour).toFixed(1);
   const lbl = document.getElementById('quotalbl');
-  if (lbl) lbl.textContent = `Quota: ${reqs} units/hr (~${hrs} hrs streaming per 10k daily quota)`;
+  if (lbl) lbl.textContent = `Quota: ${unitsPerHour.toLocaleString()} units/hr (~${hrs} hrs streaming per 10k daily quota at 5 units/call)`;
 }
 
 // ═══════ LIVE PREVIEW ═══════
