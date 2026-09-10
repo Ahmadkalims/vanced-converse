@@ -1,6 +1,7 @@
 #include "SettingsWindow.hpp"
 #include "OverlayWindow.hpp"
 #include "../common/UnicodeUtils.hpp"
+#include "../common/SimpleJson.hpp"
 #include <windows.h>
 #include <shellapi.h>
 #include <commdlg.h>
@@ -18,15 +19,11 @@ namespace fs = std::filesystem;
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
 
-#ifndef DWMWA_MICA_EFFECT
-#define DWMWA_MICA_EFFECT 1029
-#endif
-
 #ifndef DWMWA_SYSTEMBACKDROP_TYPE
 #define DWMWA_SYSTEMBACKDROP_TYPE 38
 #endif
 
-static const wchar_t* SETTINGS_CLASS_NAME = L"YT_Live_Chat_Settings_Class";
+static const wchar_t* SETTINGS_CLASS_NAME = L"Vanced_Converse_Settings_Class";
 
 typedef HRESULT (STDAPICALLTYPE *CreateWebView2EnvWithOptionsFn)(
     PCWSTR browserExecutableFolder,
@@ -43,9 +40,9 @@ static std::string get_exe_dir() {
     return unicode::utf16_to_utf8(wpath);
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // WebView2 COM Handlers
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 class EnvCreatedHandler : public ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler {
 public:
@@ -160,12 +157,12 @@ HRESULT ControllerCreatedHandler::Invoke(HRESULT result, ICoreWebView2Controller
     controller->get_CoreWebView2(&webview);
     owner->webview_ = webview;
 
-    // Resize WebView to fill client area
+    // Fill client area
     RECT bounds;
     GetClientRect(hwnd, &bounds);
     controller->put_Bounds(bounds);
 
-    // Configure settings
+    // Browser settings
     ICoreWebView2Settings* settings = nullptr;
     if (SUCCEEDED(webview->get_Settings(&settings)) && settings) {
         settings->put_IsWebMessageEnabled(TRUE);
@@ -182,9 +179,13 @@ HRESULT ControllerCreatedHandler::Invoke(HRESULT result, ICoreWebView2Controller
     webview->add_WebMessageReceived(msgHandler, &token);
     msgHandler->Release();
 
-    // Navigate to local settings_ui.html
+    // Resolve settings_ui.html path
     std::string exe_dir = get_exe_dir();
     std::string html_path = exe_dir + "\\settings_ui.html";
+    if (!fs::exists(html_path) && fs::exists("settings_ui.html")) {
+        html_path = fs::absolute("settings_ui.html").string();
+    }
+
     if (fs::exists(html_path)) {
         std::wstring w_path = L"file:///" + unicode::utf8_to_utf16(html_path);
         for (auto& c : w_path) if (c == L'\\') c = L'/';
@@ -209,9 +210,9 @@ HRESULT WebMessageHandler::Invoke(ICoreWebView2* sender, ICoreWebView2WebMessage
     return S_OK;
 }
 
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 // SettingsWindow Lifecycle
-// ═══════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 
 SettingsWindow::SettingsWindow(HINSTANCE hinstance, HWND hwnd_overlay)
     : hinstance_(hinstance), hwnd_overlay_(hwnd_overlay) {
@@ -228,26 +229,24 @@ SettingsWindow::~SettingsWindow() {
         webview_controller_->Release();
         webview_controller_ = nullptr;
     }
-    if (hwnd_) {
-        DestroyWindow(hwnd_);
-        hwnd_ = NULL;
-    }
 }
 
+/**
+ * @brief Creates the native top-level settings window with dark Fluent title bar.
+ */
 bool SettingsWindow::create() {
     WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
     wc.lpfnWndProc = SettingsWindow::WndProc;
     wc.hInstance = hinstance_;
     wc.lpszClassName = SETTINGS_CLASS_NAME;
     wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = CreateSolidBrush(RGB(17, 17, 20)); // Match dark Fluent background
+    wc.hbrBackground = CreateSolidBrush(RGB(20, 20, 24));
 
     RegisterClassExW(&wc);
 
-    // Calculate centered position
     int screen_w = GetSystemMetrics(SM_CXSCREEN);
     int screen_h = GetSystemMetrics(SM_CYSCREEN);
-    int win_w = 1040, win_h = 720;
+    int win_w = 1060, win_h = 740;
     int x = (screen_w - win_w) / 2;
     int y = (screen_h - win_h) / 2;
 
@@ -262,11 +261,13 @@ bool SettingsWindow::create() {
 
     if (!hwnd_) return false;
 
-    // Enable dark titlebar
+    // Enable dark title bar (Windows 11 & Windows 10 build 17763+)
     BOOL darkMode = TRUE;
-    DwmSetWindowAttribute(hwnd_, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+    if (FAILED(DwmSetWindowAttribute(hwnd_, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode)))) {
+        DwmSetWindowAttribute(hwnd_, 19, &darkMode, sizeof(darkMode));
+    }
 
-    // Mica dynamic material on Windows 11
+    // Windows 11 Mica backdrop
     int mica = 2;
     DwmSetWindowAttribute(hwnd_, DWMWA_SYSTEMBACKDROP_TYPE, &mica, sizeof(mica));
 
@@ -274,6 +275,9 @@ bool SettingsWindow::create() {
     return true;
 }
 
+/**
+ * @brief Initializes Edge WebView2 environment.
+ */
 void SettingsWindow::init_webview2() {
     wchar_t app_data[MAX_PATH];
     SHGetFolderPathW(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, app_data);
@@ -282,7 +286,7 @@ void SettingsWindow::init_webview2() {
         fs::create_directories(user_data);
     } catch (...) {}
 
-    // Load WebView2Loader.dll from exe directory
+    // 1. Try local WebView2Loader.dll
     std::wstring loader_path = unicode::utf8_to_utf16(get_exe_dir()) + L"\\WebView2Loader.dll";
     HMODULE loader = LoadLibraryW(loader_path.c_str());
     if (!loader) {
@@ -299,7 +303,7 @@ void SettingsWindow::init_webview2() {
         }
     }
 
-    // Fallback: system Edge runtime
+    // 2. Fallback: Edge Runtime
     HMODULE edge = LoadLibraryW(L"EmbeddedBrowserWebView.dll");
     if (edge) {
         auto createEnv = (CreateWebView2EnvWithOptionsFn)GetProcAddress(edge, "CreateCoreWebView2EnvironmentWithOptions");
@@ -313,7 +317,7 @@ void SettingsWindow::init_webview2() {
 
     MessageBoxW(hwnd_,
         L"Microsoft Edge WebView2 Runtime is required to render the settings panel.\n\nPlease ensure WebView2 Runtime is installed.",
-        L"Vanced Converse — Settings",
+        L"Vanced Converse",
         MB_OK | MB_ICONWARNING);
 }
 
@@ -321,10 +325,15 @@ void SettingsWindow::on_webview_ready() {
     send_config_to_webview();
 }
 
+/**
+ * @brief Dispatches the complete current configuration and theme library to WebView2.
+ */
 void SettingsWindow::send_config_to_webview() {
     if (!webview_ready_ || !webview_) return;
 
     live_config_ = g_config.get();
+    g_theme_manager.scan_themes_directory();
+    const auto& theme_list = g_theme_manager.get_available_themes();
 
     std::ostringstream js;
     js << "{"
@@ -338,17 +347,17 @@ void SettingsWindow::send_config_to_webview() {
        << "\"always_on_top\":" << (live_config_.always_on_top ? "true" : "false") << ","
        << "\"show_overlay\":" << (live_config_.show_overlay ? "true" : "false") << ","
        << "\"active_theme\":\"" << live_config_.active_theme_name << "\","
-       << "\"theme\":{"
-       << "\"overlay_opacity\":" << std::fixed << std::setprecision(2) << live_config_.theme.overlay.opacity << ","
-       << "\"overlay_blur\":" << (int)live_config_.theme.overlay.blur << ","
-       << "\"overlay_radius\":" << (int)live_config_.theme.overlay.corner_radius << ","
-       << "\"border_width\":" << (int)live_config_.theme.overlay.outline_size << ","
-       << "\"border_color\":\"" << live_config_.theme.overlay.outline_color << "\","
-       << "\"font_size\":" << (int)live_config_.theme.message_text.font.size << ","
-       << "\"username_color\":\"" << live_config_.theme.username.color_value << "\","
-       << "\"message_color\":\"" << live_config_.theme.message_text.color << "\","
-       << "\"bg_color\":\"" << live_config_.theme.overlay.color << "\""
-       << "}"
+       << "\"theme\":" << live_config_.theme.to_json_string(false) << ","
+       << "\"available_themes\":[";
+
+    for (size_t i = 0; i < theme_list.size(); ++i) {
+        if (i > 0) js << ",";
+        js << "{\"name\":\"" << theme_list[i].metadata.name << "\","
+           << "\"description\":\"" << theme_list[i].metadata.description << "\","
+           << "\"color\":\"" << theme_list[i].overlay.color << "\","
+           << "\"accent\":\"" << theme_list[i].username.color_value << "\"}";
+    }
+    js << "]"
        << "}"
        << "}";
 
@@ -356,112 +365,31 @@ void SettingsWindow::send_config_to_webview() {
     webview_->PostWebMessageAsJson(w_json.c_str());
 }
 
+/**
+ * @brief Handles incoming IPC messages from the settings panel WebView.
+ */
 void SettingsWindow::handle_webview_message(const std::wstring& json_msg) {
     std::string msg = unicode::utf16_to_utf8(json_msg);
+    json::Value root = json::parse(msg);
+    if (!root.is_object()) return;
 
-    auto find_str = [&](const std::string& key) -> std::string {
-        std::string search = "\"" + key + "\":\"";
-        auto pos = msg.find(search);
-        if (pos == std::string::npos) {
-            // Check without quotes for key
-            search = "\"" + key + "\": \"";
-            pos = msg.find(search);
-            if (pos == std::string::npos) return "";
-        }
-        pos += search.size();
-        auto end = msg.find('"', pos);
-        if (end == std::string::npos) return "";
-        return msg.substr(pos, end - pos);
-    };
-
-    auto find_int = [&](const std::string& key) -> int {
-        std::string search = "\"" + key + "\":";
-        auto pos = msg.find(search);
-        if (pos == std::string::npos) return -1;
-        pos += search.size();
-        while (pos < msg.size() && (msg[pos] == ' ' || msg[pos] == '\t')) pos++;
-        return std::atoi(msg.c_str() + pos);
-    };
-
-    auto find_bool = [&](const std::string& key) -> int {
-        std::string search = "\"" + key + "\":";
-        auto pos = msg.find(search);
-        if (pos == std::string::npos) return -1;
-        pos += search.size();
-        while (pos < msg.size() && (msg[pos] == ' ' || msg[pos] == '\t')) pos++;
-        if (msg[pos] == 't' || msg[pos] == 'T') return 1;
-        if (msg[pos] == 'f' || msg[pos] == 'F') return 0;
-        return -1;
-    };
-
-    auto find_float = [&](const std::string& key) -> float {
-        std::string search = "\"" + key + "\":";
-        auto pos = msg.find(search);
-        if (pos == std::string::npos) return -1.0f;
-        pos += search.size();
-        while (pos < msg.size() && (msg[pos] == ' ' || msg[pos] == '\t')) pos++;
-        return (float)std::atof(msg.c_str() + pos);
-    };
-
-    std::string type = find_str("type");
+    std::string type = root["type"].as_string("");
 
     if (type == "save_all" || type == "preview_update") {
-        std::string vid = find_str("video_id");
-        if (!vid.empty()) live_config_.video_id = AppConfig::extract_video_id(vid);
-        
-        std::string key = find_str("api_key");
-        if (!key.empty()) live_config_.api_key = key;
+        if (root.contains("video_id")) live_config_.video_id = AppConfig::extract_video_id(root["video_id"].as_string(""));
+        if (root.contains("api_key")) live_config_.api_key = root["api_key"].as_string("");
+        if (root.contains("poll_interval_sec")) live_config_.poll_interval_sec = root["poll_interval_sec"].as_int(live_config_.poll_interval_sec);
+        if (root.contains("max_messages")) live_config_.max_messages = root["max_messages"].as_int(live_config_.max_messages);
+        if (root.contains("click_through")) live_config_.click_through = root["click_through"].as_bool(live_config_.click_through);
+        if (root.contains("always_on_top")) live_config_.always_on_top = root["always_on_top"].as_bool(live_config_.always_on_top);
+        if (root.contains("show_overlay")) live_config_.show_overlay = root["show_overlay"].as_bool(live_config_.show_overlay);
 
-        int poll = find_int("poll_interval_sec");
-        if (poll > 0) live_config_.poll_interval_sec = poll;
-
-        int maxm = find_int("max_messages");
-        if (maxm > 0) live_config_.max_messages = maxm;
-
-        int ct = find_bool("click_through");
-        if (ct >= 0) live_config_.click_through = (ct == 1);
-
-        int aot = find_bool("always_on_top");
-        if (aot >= 0) live_config_.always_on_top = (aot == 1);
-
-        int so = find_bool("show_overlay");
-        if (so >= 0) live_config_.show_overlay = (so == 1);
-
-        // Theme properties
-        float op = find_float("overlay_opacity");
-        if (op >= 0.0f) live_config_.theme.overlay.opacity = op;
-
-        int blur = find_int("overlay_blur");
-        if (blur >= 0) live_config_.theme.overlay.blur = (float)blur;
-
-        int rad = find_int("overlay_radius");
-        if (rad >= 0) live_config_.theme.overlay.corner_radius = (float)rad;
-
-        int bw = find_int("border_width");
-        if (bw >= 0) {
-            live_config_.theme.overlay.outline_size = (float)bw;
-            live_config_.theme.overlay.outline_enabled = (bw > 0);
+        // Parse theme object
+        if (root.contains("theme") && root["theme"].is_object()) {
+            live_config_.theme.from_json_string(root["theme"].serialize());
         }
 
-        std::string bc = find_str("border_color");
-        if (!bc.empty()) live_config_.theme.overlay.outline_color = bc;
-
-        int fs_val = find_int("font_size");
-        if (fs_val > 0) {
-            live_config_.theme.message_text.font.size = (float)fs_val;
-            live_config_.theme.username.font.size = (float)fs_val;
-        }
-
-        std::string ucol = find_str("username_color");
-        if (!ucol.empty()) live_config_.theme.username.color_value = ucol;
-
-        std::string mcol = find_str("message_color");
-        if (!mcol.empty()) live_config_.theme.message_text.color = mcol;
-
-        std::string bgcol = find_str("bg_color");
-        if (!bgcol.empty()) live_config_.theme.overlay.color = bgcol;
-
-        // Apply to runtime config immediately
+        // Apply immediately to runtime and notify overlay
         g_config.update(live_config_, true);
         g_theme_manager.set_active_theme(live_config_.theme);
 
@@ -472,19 +400,54 @@ void SettingsWindow::handle_webview_message(const std::wstring& json_msg) {
         }
 
     } else if (type == "load_theme") {
-        std::string name = find_str("name");
+        std::string name = root["name"].as_string("");
+        if (!name.empty() && g_theme_manager.set_active_theme_by_name(name)) {
+            live_config_.theme = g_theme_manager.get_active_theme();
+            live_config_.active_theme_name = live_config_.theme.metadata.name;
+            g_config.update(live_config_, true);
+            g_config.save();
+            send_config_to_webview();
+        }
+
+    } else if (type == "theme_duplicate") {
+        std::string old_name = root["old_name"].as_string("");
+        std::string new_name = root["new_name"].as_string("");
+        if (!old_name.empty() && !new_name.empty()) {
+            std::string err;
+            g_theme_manager.duplicate_theme(old_name, new_name, &err);
+            send_config_to_webview();
+        }
+
+    } else if (type == "theme_rename") {
+        std::string old_name = root["old_name"].as_string("");
+        std::string new_name = root["new_name"].as_string("");
+        if (!old_name.empty() && !new_name.empty()) {
+            std::string err;
+            g_theme_manager.rename_theme(old_name, new_name, &err);
+            send_config_to_webview();
+        }
+
+    } else if (type == "theme_delete") {
+        std::string name = root["name"].as_string("");
         if (!name.empty()) {
-            if (g_theme_manager.set_active_theme_by_name(name)) {
-                live_config_.theme = g_theme_manager.get_active_theme();
-                live_config_.active_theme_name = live_config_.theme.metadata.name;
-                g_config.update(live_config_, true);
-                g_config.save();
+            std::string err;
+            g_theme_manager.delete_theme(name, &err);
+            send_config_to_webview();
+        }
+
+    } else if (type == "theme_import_dragdrop") {
+        std::string css_content = root["content"].as_string("");
+        if (!css_content.empty()) {
+            StreamTheme t;
+            std::string err;
+            if (t.from_css_string(css_content, &err)) {
+                g_theme_manager.save_custom_theme(t, &err);
                 send_config_to_webview();
             }
         }
 
     } else if (type == "update_video") {
-        std::string url = find_str("url");
+        std::string url = root["url"].as_string("");
         on_update_video(url);
 
     } else if (type == "import_theme") {

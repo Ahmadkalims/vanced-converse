@@ -16,6 +16,11 @@
 #define WM_OVERLAY_UPDATE_STATUS (WM_USER + 103)
 #define WM_OVERLAY_UPDATE_THEME  (WM_USER + 104)
 
+/**
+ * @brief High-performance hardware-accelerated desktop chat overlay window.
+ * Renders per-pixel 32-bit ARGB layered window with Acrylic/Mica DWM backdrops,
+ * rounded corner region clipping, smooth message scrolling, and edge alpha fading.
+ */
 class OverlayWindow {
 private:
     HWND hwnd_ = NULL;
@@ -24,7 +29,7 @@ private:
 
     std::deque<ChatMessage> messages_;
     std::mutex msg_mutex_;
-    std::string status_text_ = "Connecting to YouTube live chat...";
+    std::string status_text_;
 
     AppConfig config_;
     TextRenderer text_renderer_;

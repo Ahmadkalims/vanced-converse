@@ -18,8 +18,11 @@ void test_theme_system() {
     assert(mp.metadata.name == "Midnight Pink");
     assert(mp.message_text.font.family == "Montserrat Alternates");
     assert(mp.message_text.font.size == 16.0f);
-    assert(mp.overlay.opacity == 0.4f);
-    assert(mp.scrollbar.visible == false);
+    assert(mp.overlay.opacity == 0.40f);
+    assert(mp.overlay.padding.top == 16.0f);
+    assert(mp.overlay.fade_edges == true);
+    assert(mp.overlay.fade_length == 32.0f);
+    assert(mp.username.effect.glow_radius == 6.0f);
 
     // 2. Test JSON Serialization and Roundtrip
     std::string json_str = mp.to_json_string(true);
@@ -33,6 +36,8 @@ void test_theme_system() {
     assert(parse_ok && "Theme JSON must parse successfully");
     assert(parsed.metadata.name == mp.metadata.name);
     assert(parsed.message_text.color == mp.message_text.color);
+    assert(parsed.overlay.padding.top == 16.0f);
+    assert(parsed.overlay.fade_edges == true);
 
     // 3. Test Question Highlight Special Event
     std::wstring q_msg = L"How do I customize the font?";
@@ -48,67 +53,65 @@ void test_theme_system() {
     assert(malformed.overlay.opacity == 1.0f && "Opacity must be clamped to 1.0");
     assert(malformed.overlay.blur == 0.0f && "Blur must be clamped to 0.0");
 
-    // 5. Test Theme Import, Export, and Template Initialization
+    // 5. Test Theme Directory & Template Initialization
     g_theme_manager.init();
     std::string themes_dir = g_theme_manager.get_themes_directory();
     assert(!themes_dir.empty());
     assert(fs::exists(themes_dir));
-    assert(fs::exists(fs::path(themes_dir) / "template.streamtheme"));
-    assert(fs::exists(fs::path(themes_dir) / "Midnight Pink.streamtheme"));
+    assert(fs::exists(fs::path(themes_dir) / "template.css"));
+    assert(fs::exists(fs::path(themes_dir) / "Midnight_Pink.css"));
 
-    // Verify template.streamtheme parses with all comments intact
-    std::ifstream template_file(fs::path(themes_dir) / "template.streamtheme");
+    // Verify template.css parses with all comments and properties intact
+    std::ifstream template_file(fs::path(themes_dir) / "template.css");
     assert(template_file.is_open());
     std::stringstream template_ss;
     template_ss << template_file.rdbuf();
     template_file.close();
 
     StreamTheme template_theme;
-    bool template_ok = template_theme.from_json_string(template_ss.str(), &err);
-    assert(template_ok && "template.streamtheme with comments must parse cleanly");
-    assert(template_theme.metadata.name == "Custom Stream Theme Template");
-
-    std::string temp_theme_path = "test_custom_theme.streamtheme";
-    std::ofstream out(temp_theme_path);
-    out << json_str;
-    out.close();
-
-    bool import_ok = g_theme_manager.import_theme_from_file(temp_theme_path, &err);
-    assert(import_ok && "ThemeManager must import .streamtheme files successfully");
+    bool template_ok = template_theme.from_css_string(template_ss.str(), &err);
+    assert(template_ok && "template.css with comments must parse cleanly");
+    assert(!template_theme.metadata.name.empty());
 
     // 6. Test CSS Theme Generation and CSS Parsing Roundtrip
+    mp.custom_css_vars["--vc-user-custom-tag"] = "custom-glow-val";
     std::string css_output = mp.to_css_string();
     assert(!css_output.empty());
     assert(css_output.find("--vc-overlay-bg-color") != std::string::npos);
-    assert(css_output.find("--vc-username-font") != std::string::npos);
+    assert(css_output.find("--vc-overlay-padding-top") != std::string::npos);
+    assert(css_output.find("--vc-overlay-fade-edges") != std::string::npos);
+    assert(css_output.find("--vc-username-glow-radius") != std::string::npos);
     assert(css_output.find("--vc-event-question-bg") != std::string::npos);
+    assert(css_output.find("--vc-user-custom-tag: custom-glow-val;") != std::string::npos);
 
     StreamTheme css_parsed;
     bool css_parse_ok = css_parsed.from_css_string(css_output, &err);
     assert(css_parse_ok && "Theme CSS must parse successfully into C++ StreamTheme");
     assert(css_parsed.metadata.name == "Midnight Pink");
     assert(css_parsed.overlay.color == mp.overlay.color);
+    assert(css_parsed.overlay.padding.top == 16.0f);
+    assert(css_parsed.overlay.fade_edges == true);
     assert(css_parsed.message_text.color == mp.message_text.color);
     assert(css_parsed.username.font.family == "Montserrat Alternates");
+    assert(css_parsed.custom_css_vars["--vc-user-custom-tag"] == "custom-glow-val");
 
-    // Test importing raw CSS theme file
-    std::string temp_css_path = "test_custom_theme.css";
-    std::ofstream css_out(temp_css_path);
-    css_out << css_output;
-    css_out.close();
+    // 7. Test Theme Duplicate, Rename, Export, Delete CRUD
+    bool dup_ok = g_theme_manager.duplicate_theme("Midnight Pink", "Test Theme Copy", &err);
+    assert(dup_ok && "ThemeManager duplicate_theme must succeed");
+
+    bool rename_ok = g_theme_manager.rename_theme("Test Theme Copy", "Test Theme Renamed", &err);
+    assert(rename_ok && "ThemeManager rename_theme must succeed");
 
     std::string export_dest = "test_export.css";
-    bool export_ok = g_theme_manager.export_theme_to_file("Midnight Pink", export_dest, &err);
-    assert(export_ok && "ThemeManager must export .css theme files successfully");
+    bool export_ok = g_theme_manager.export_theme_to_file("Test Theme Renamed", export_dest, &err);
+    assert(export_ok && "ThemeManager export_theme_to_file must succeed");
 
-    // Cleanup temp files
+    bool del_ok = g_theme_manager.delete_theme("Test Theme Renamed", &err);
+    assert(del_ok && "ThemeManager delete_theme must succeed");
+
     try {
-        fs::remove(temp_theme_path);
         fs::remove(export_dest);
-        fs::remove(temp_css_path);
     } catch (...) {}
 
     std::cout << "[PASS] Theme System, CSS Theme Engine & Import/Export Passed!" << std::endl;
 }
-
-

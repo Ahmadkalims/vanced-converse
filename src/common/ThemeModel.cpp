@@ -5,7 +5,10 @@
 #include <algorithm>
 #include <cctype>
 
+// ══════════════════════════════════════════════════════════════════════════════
 // ColorRGBA Implementation
+// ══════════════════════════════════════════════════════════════════════════════
+
 ColorRGBA ColorRGBA::parse(const std::string& raw, ColorRGBA fallback) {
     std::string s;
     for (char c : raw) {
@@ -85,7 +88,10 @@ Gdiplus::Color ColorRGBA::to_gdiplus(float opacity_multiplier) const {
     return Gdiplus::Color(final_a, r, g, b);
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
 // JSON conversions
+// ══════════════════════════════════════════════════════════════════════════════
+
 json::Value ThemeMetadata::to_json() const {
     json::Value obj = json::Value::object();
     obj["name"] = name;
@@ -155,6 +161,10 @@ json::Value OverlayBackgroundConfig::to_json() const {
     obj["outline"] = out;
 
     obj["cornerRadius"] = (double)corner_radius;
+    obj["padding"] = padding.to_json();
+    obj["fadeEdges"] = fade_edges;
+    obj["fadeLength"] = (double)fade_length;
+
     return obj;
 }
 
@@ -216,6 +226,9 @@ void OverlayBackgroundConfig::from_json(const json::Value& v) {
     }
 
     corner_radius = (float)v["cornerRadius"].as_double(corner_radius);
+    if (v.contains("padding")) padding.from_json(v["padding"]);
+    fade_edges = v["fadeEdges"].as_bool(fade_edges);
+    fade_length = (float)v["fadeLength"].as_double(fade_length);
 }
 
 json::Value ScrollbarConfig::to_json() const {
@@ -267,6 +280,9 @@ json::Value TextEffectConfig::to_json() const {
     json::Value obj = json::Value::object();
     obj["type"] = type;
     obj["shadow"] = shadow;
+    obj["glowRadius"] = (double)glow_radius;
+    obj["glowIntensity"] = (double)glow_intensity;
+    obj["glowColor"] = glow_color;
     return obj;
 }
 
@@ -274,6 +290,9 @@ void TextEffectConfig::from_json(const json::Value& v) {
     if (!v.is_object()) return;
     type = v["type"].as_string(type);
     shadow = v["shadow"].as_string(shadow);
+    glow_radius = (float)v["glowRadius"].as_double(glow_radius);
+    glow_intensity = (float)v["glowIntensity"].as_double(glow_intensity);
+    glow_color = v["glowColor"].as_string(glow_color);
 }
 
 json::Value UsernameConfig::to_json() const {
@@ -435,8 +454,9 @@ void SpecialEventConfig::from_json(const json::Value& v) {
     highlight.from_json(v["highlight"]);
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
 // StreamTheme Implementation
-
+// ══════════════════════════════════════════════════════════════════════════════
 
 std::string StreamTheme::to_json_string(bool pretty) const {
     json::Value root = json::Value::object();
@@ -447,12 +467,22 @@ std::string StreamTheme::to_json_string(bool pretty) const {
     root["username"] = username.to_json();
     root["messageText"] = message_text.to_json();
     root["messageBackground"] = message_background.to_json();
+    root["motionDuration"] = motion_duration;
+    root["motionEase"] = motion_ease;
 
     json::Value ev_arr = json::Value::array();
     for (const auto& ev : special_events) {
         ev_arr.push_back(ev.to_json());
     }
     root["specialEvents"] = ev_arr;
+
+    if (!custom_css_vars.empty()) {
+        json::Value customs = json::Value::object();
+        for (const auto& [k, val] : custom_css_vars) {
+            customs[k] = val;
+        }
+        root["customCssVars"] = customs;
+    }
 
     return root.serialize(pretty ? 2 : 0);
 }
@@ -475,6 +505,8 @@ bool StreamTheme::from_json_string(const std::string& json_str, std::string* err
     if (root.contains("username")) username.from_json(root["username"]);
     if (root.contains("messageText")) message_text.from_json(root["messageText"]);
     if (root.contains("messageBackground")) message_background.from_json(root["messageBackground"]);
+    motion_duration = root["motionDuration"].as_string(motion_duration);
+    motion_ease = root["motionEase"].as_string(motion_ease);
 
     if (root.contains("specialEvents") && root["specialEvents"].is_array()) {
         special_events.clear();
@@ -482,6 +514,13 @@ bool StreamTheme::from_json_string(const std::string& json_str, std::string* err
             SpecialEventConfig ev;
             ev.from_json(root["specialEvents"][i]);
             special_events.push_back(ev);
+        }
+    }
+
+    if (root.contains("customCssVars") && root["customCssVars"].is_object()) {
+        custom_css_vars.clear();
+        for (const auto& [k, val] : root["customCssVars"].obj_val) {
+            custom_css_vars[k] = val.as_string("");
         }
     }
 
@@ -522,39 +561,71 @@ std::string StreamTheme::to_css_string() const {
        << "Description: " << metadata.description << "\n"
        << "*/\n\n"
        << ":root {\n"
+       << "    /* Overlay Container */\n"
        << "    --vc-overlay-bg-color: " << overlay.color << ";\n"
        << "    --vc-overlay-bg-opacity: " << overlay.opacity << ";\n"
        << "    --vc-overlay-bg-blur: " << overlay.blur << "px;\n"
-       << "    --vc-overlay-radius: " << overlay.corner_radius << "px;\n\n"
+       << "    --vc-overlay-radius: " << overlay.corner_radius << "px;\n"
+       << "    --vc-overlay-padding-top: " << overlay.padding.top << "px;\n"
+       << "    --vc-overlay-padding-bottom: " << overlay.padding.bottom << "px;\n"
+       << "    --vc-overlay-padding-left: " << overlay.padding.left << "px;\n"
+       << "    --vc-overlay-padding-right: " << overlay.padding.right << "px;\n"
+       << "    --vc-overlay-fade-edges: " << (overlay.fade_edges ? "1" : "0") << ";\n"
+       << "    --vc-overlay-fade-length: " << overlay.fade_length << "px;\n\n"
+       << "    /* Overlay Border & Glow */\n"
        << "    --vc-overlay-border-color: " << overlay.outline_color << ";\n"
        << "    --vc-overlay-border-width: " << overlay.outline_size << "px;\n"
        << "    --vc-overlay-glow-color: " << overlay.outline_glow_color << ";\n"
        << "    --vc-overlay-glow-radius: " << overlay.outline_glow_blur << "px;\n\n"
+       << "    /* Username Typography & Glow */\n"
        << "    --vc-username-font: \"" << username.font.family << "\", sans-serif;\n"
        << "    --vc-username-size: " << username.font.size << "px;\n"
        << "    --vc-username-weight: " << username.font.weight << ";\n"
        << "    --vc-username-color: " << username.color_value << ";\n"
-       << "    --vc-username-glow-color: " << username.effect.shadow << ";\n\n"
+       << "    --vc-username-glow-color: " << username.effect.glow_color << ";\n"
+       << "    --vc-username-glow-radius: " << username.effect.glow_radius << "px;\n"
+       << "    --vc-username-glow-intensity: " << username.effect.glow_intensity << ";\n\n"
+       << "    /* Message Typography */\n"
        << "    --vc-message-font: \"" << message_text.font.family << "\", sans-serif;\n"
        << "    --vc-message-size: " << message_text.font.size << "px;\n"
        << "    --vc-message-weight: " << message_text.font.weight << ";\n"
        << "    --vc-message-color: " << message_text.color << ";\n"
-       << "    --vc-message-line-spacing: " << message_text.line_spacing << "px;\n\n"
+       << "    --vc-message-line-spacing: " << message_text.line_spacing << "px;\n"
+       << "    --vc-message-glow-color: " << message_text.effect.glow_color << ";\n"
+       << "    --vc-message-glow-radius: " << message_text.effect.glow_radius << "px;\n"
+       << "    --vc-message-glow-intensity: " << message_text.effect.glow_intensity << ";\n\n"
+       << "    /* Message Card / Bubble */\n"
        << "    --vc-message-bg-color: " << message_background.color << ";\n"
        << "    --vc-message-radius: " << message_background.corner_radius << "px;\n"
        << "    --vc-message-border-color: " << message_background.outline.color << ";\n"
-       << "    --vc-message-border-width: " << message_background.outline.size << "px;\n\n"
+       << "    --vc-message-border-width: " << message_background.outline.size << "px;\n"
+       << "    --vc-message-padding-top: " << message_background.padding.top << "px;\n"
+       << "    --vc-message-padding-bottom: " << message_background.padding.bottom << "px;\n"
+       << "    --vc-message-padding-left: " << message_background.padding.left << "px;\n"
+       << "    --vc-message-padding-right: " << message_background.padding.right << "px;\n\n"
+       << "    /* Scrollbar */\n"
        << "    --vc-scrollbar-width: " << scrollbar.width << "px;\n"
        << "    --vc-scrollbar-thumb-color: " << scrollbar.color << ";\n"
        << "    --vc-scrollbar-radius: " << scrollbar.corner_radius << "px;\n\n"
-       << "    --vc-motion-duration: 300ms;\n"
-       << "    --vc-motion-ease: cubic-bezier(0, 0, 0.2, 1);\n\n";
+       << "    /* Motion */\n"
+       << "    --vc-motion-duration: " << motion_duration << ";\n"
+       << "    --vc-motion-ease: " << motion_ease << ";\n\n";
 
+    // Special Events
     for (const auto& ev : special_events) {
         if (ev.id == "question") {
-            ss << "    --vc-event-question-bg: " << ev.highlight.background_color << ";\n"
+            ss << "    /* Special Event: Question Highlight */\n"
+               << "    --vc-event-question-bg: " << ev.highlight.background_color << ";\n"
                << "    --vc-event-question-border: " << ev.highlight.outline.color << ";\n"
                << "    --vc-event-question-border-width: " << ev.highlight.outline.size << "px;\n";
+        }
+    }
+
+    // Output any preserved custom CSS variables
+    if (!custom_css_vars.empty()) {
+        ss << "\n    /* Custom Theme Variables */\n";
+        for (const auto& [k, v] : custom_css_vars) {
+            ss << "    " << k << ": " << v << ";\n";
         }
     }
 
@@ -612,6 +683,21 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
             overlay.blur = parse_css_num(val, overlay.blur);
         } else if (prop == "--vc-overlay-radius") {
             overlay.corner_radius = parse_css_num(val, overlay.corner_radius);
+        } else if (prop == "--vc-overlay-padding-top") {
+            overlay.padding.top = parse_css_num(val, overlay.padding.top);
+        } else if (prop == "--vc-overlay-padding-bottom") {
+            overlay.padding.bottom = parse_css_num(val, overlay.padding.bottom);
+        } else if (prop == "--vc-overlay-padding-left") {
+            overlay.padding.left = parse_css_num(val, overlay.padding.left);
+        } else if (prop == "--vc-overlay-padding-right") {
+            overlay.padding.right = parse_css_num(val, overlay.padding.right);
+        } else if (prop == "--vc-overlay-padding") {
+            float p = parse_css_num(val, 16.0f);
+            overlay.padding = { p, p, p, p };
+        } else if (prop == "--vc-overlay-fade-edges") {
+            overlay.fade_edges = (val == "1" || val == "true" || val == "yes");
+        } else if (prop == "--vc-overlay-fade-length") {
+            overlay.fade_length = parse_css_num(val, overlay.fade_length);
         } else if (prop == "--vc-overlay-border-color") {
             overlay.outline_color = val;
             overlay.outline_enabled = true;
@@ -637,7 +723,12 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
             username.color_value = val;
         } else if (prop == "--vc-username-glow-color") {
             username.effect.type = "glow";
-            username.effect.shadow = "0 0 4px " + val;
+            username.effect.glow_color = val;
+            username.effect.shadow = "0 0 " + std::to_string((int)username.effect.glow_radius) + "px " + val;
+        } else if (prop == "--vc-username-glow-radius") {
+            username.effect.glow_radius = parse_css_num(val, username.effect.glow_radius);
+        } else if (prop == "--vc-username-glow-intensity") {
+            username.effect.glow_intensity = parse_css_num(val, username.effect.glow_intensity);
         }
 
         // Message Variables
@@ -653,6 +744,13 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
             message_text.color = val;
         } else if (prop == "--vc-message-line-spacing") {
             message_text.line_spacing = parse_css_num(val, message_text.line_spacing);
+        } else if (prop == "--vc-message-glow-color") {
+            message_text.effect.glow_color = val;
+            message_text.effect.type = (val.empty() || val == "none") ? "solid" : "glow";
+        } else if (prop == "--vc-message-glow-radius") {
+            message_text.effect.glow_radius = parse_css_num(val, message_text.effect.glow_radius);
+        } else if (prop == "--vc-message-glow-intensity") {
+            message_text.effect.glow_intensity = parse_css_num(val, message_text.effect.glow_intensity);
         }
 
         // Message Background Variables
@@ -667,6 +765,14 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
         } else if (prop == "--vc-message-border-width") {
             message_background.outline.size = parse_css_num(val, message_background.outline.size);
             message_background.outline.enabled = (message_background.outline.size > 0.0f);
+        } else if (prop == "--vc-message-padding-top") {
+            message_background.padding.top = parse_css_num(val, message_background.padding.top);
+        } else if (prop == "--vc-message-padding-bottom") {
+            message_background.padding.bottom = parse_css_num(val, message_background.padding.bottom);
+        } else if (prop == "--vc-message-padding-left") {
+            message_background.padding.left = parse_css_num(val, message_background.padding.left);
+        } else if (prop == "--vc-message-padding-right") {
+            message_background.padding.right = parse_css_num(val, message_background.padding.right);
         }
 
         // Scrollbar Variables
@@ -676,6 +782,13 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
             scrollbar.color = val;
         } else if (prop == "--vc-scrollbar-radius") {
             scrollbar.corner_radius = parse_css_num(val, scrollbar.corner_radius);
+        }
+
+        // Motion
+        else if (prop == "--vc-motion-duration") {
+            motion_duration = val;
+        } else if (prop == "--vc-motion-ease") {
+            motion_ease = val;
         }
 
         // Special Events
@@ -695,34 +808,41 @@ bool StreamTheme::from_css_string(const std::string& css_str, std::string* error
                 if (ev.id == "question") ev.highlight.outline.size = parse_css_num(val, 2.0f);
             }
         }
+
+        // Preserve any custom CSS variable
+        else if (prop.find("--") == 0) {
+            custom_css_vars[prop] = val;
+        }
     }
 
     return validate();
 }
 
-
 bool StreamTheme::validate(std::vector<std::string>* warnings) {
-    bool is_valid = true;
+    bool ok = true;
+    auto clamp_val = [&](float& val, float min_v, float max_v, const char* name) {
+        if (val < min_v) {
+            if (warnings) warnings->push_back(std::string(name) + " below min; clamped");
+            val = min_v;
+        }
+        if (val > max_v) {
+            if (warnings) warnings->push_back(std::string(name) + " above max; clamped");
+            val = max_v;
+        }
+    };
 
-    // Clamp and sanitize
-    overlay.opacity = std::clamp(overlay.opacity, 0.0f, 1.0f);
-    overlay.blur = std::clamp(overlay.blur, 0.0f, 100.0f);
-    overlay.corner_radius = std::clamp(overlay.corner_radius, 0.0f, 60.0f);
+    clamp_val(overlay.opacity, 0.0f, 1.0f, "overlay.opacity");
+    clamp_val(overlay.blur, 0.0f, 100.0f, "overlay.blur");
+    clamp_val(overlay.corner_radius, 0.0f, 80.0f, "overlay.corner_radius");
+    clamp_val(overlay.outline_size, 0.0f, 10.0f, "overlay.outline_size");
+    clamp_val(overlay.fade_length, 0.0f, 120.0f, "overlay.fade_length");
 
-    username.font.size = std::clamp(username.font.size, 8.0f, 72.0f);
-    message_text.font.size = std::clamp(message_text.font.size, 8.0f, 72.0f);
+    clamp_val(username.font.size, 8.0f, 72.0f, "username.font.size");
+    clamp_val(message_text.font.size, 8.0f, 72.0f, "message_text.font.size");
+    clamp_val(message_background.corner_radius, 0.0f, 50.0f, "message_background.corner_radius");
+    clamp_val(scrollbar.width, 2.0f, 30.0f, "scrollbar.width");
 
-    username.line_spacing = std::clamp(username.line_spacing, -50.0f, 50.0f);
-    message_text.line_spacing = std::clamp(message_text.line_spacing, -50.0f, 50.0f);
-
-    message_background.corner_radius = std::clamp(message_background.corner_radius, 0.0f, 50.0f);
-
-    if (username.palette.empty()) {
-        username.palette.push_back("#F9A8D4");
-        if (warnings) warnings->push_back("Username palette was empty; restored default pink color.");
-    }
-
-    return is_valid;
+    return ok;
 }
 
 std::string StreamTheme::get_user_color(const std::string& author_id, const std::string& author_name) const {
@@ -730,75 +850,91 @@ std::string StreamTheme::get_user_color(const std::string& author_id, const std:
         return username.color_value;
     }
 
-    if (username.palette.empty()) return "#F9A8D4";
+    if (username.palette.empty()) {
+        return username.color_value;
+    }
 
-    // Deterministic hash based on identity
+    // Deterministic hashing for stable persistent colors
     std::string key = author_id.empty() ? author_name : author_id;
-    std::hash<std::string> hasher;
-    size_t idx = hasher(key) % username.palette.size();
+    uint32_t hash = 2166136261u;
+    for (char c : key) {
+        hash ^= (uint8_t)c;
+        hash *= 16777619u;
+    }
+
+    size_t idx = hash % username.palette.size();
     return username.palette[idx];
 }
 
 bool StreamTheme::is_special_event_triggered(const std::string& event_id, const std::wstring& msg_text) const {
     for (const auto& ev : special_events) {
-        if (ev.enabled && ev.id == event_id) {
-            std::wstring trigger_val = unicode::utf8_to_utf16(ev.trigger.value);
-            if (trigger_val.empty()) continue;
-
-            if (ev.trigger.type == "contains_character" || ev.trigger.type == "contains_text") {
-                if (msg_text.find(trigger_val) != std::wstring::npos) return true;
-            } else if (ev.trigger.type == "starts_with") {
-                if (msg_text.rfind(trigger_val, 0) == 0) return true;
+        if (ev.id == event_id && ev.enabled) {
+            if (ev.trigger.type == "contains_character") {
+                std::wstring w_val = unicode::utf8_to_utf16(ev.trigger.value);
+                if (!w_val.empty() && msg_text.find(w_val) != std::wstring::npos) {
+                    return true;
+                }
             }
         }
     }
     return false;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// Presets
+// ══════════════════════════════════════════════════════════════════════════════
+
 StreamTheme StreamTheme::create_midnight_pink() {
     StreamTheme t;
     t.metadata.name = "Midnight Pink";
-    t.metadata.author = "Antigravity";
+    t.metadata.author = "Vanced Converse";
     t.metadata.version = 1;
-    t.metadata.description = "Dark acrylic overlay with pink highlights matching reference theme";
+    t.metadata.description = "Deep night acrylic canvas illuminated by soft pastel pink neon glows.";
 
     t.overlay.type = OverlayBgType::Acrylic;
     t.overlay.color = "#14141E";
-    t.overlay.opacity = 0.4f;
-    t.overlay.blur = 15.0f;
-    t.overlay.saturation = 120.0f;
+    t.overlay.opacity = 0.40f;
+    t.overlay.blur = 20.0f;
     t.overlay.corner_radius = 20.0f;
+    t.overlay.outline_enabled = true;
+    t.overlay.outline_size = 1.0f;
+    t.overlay.outline_color = "rgba(255, 255, 255, 0.12)";
+    t.overlay.padding = { 16.0f, 16.0f, 16.0f, 16.0f };
+    t.overlay.fade_edges = true;
+    t.overlay.fade_length = 32.0f;
 
-    t.scrollbar.visible = false;
-    t.scrollbar.interaction_mode = ScrollbarInteractionMode::ClickthroughOffHover;
-    t.scrollbar.color = "#F9A8D4";
-
-    t.username.placement = UsernamePlacement::BeforeMessage;
     t.username.font = { "Montserrat Alternates", 16.0f, 600 };
     t.username.color_mode = UsernameColorMode::PersistentUserColor;
     t.username.color_value = "#F9A8D4";
-    t.username.palette = { "#F9A8D4", "#F472B6", "#FB7185", "#38BDF8", "#34D399", "#A78BFA" };
-    t.username.effect = { "glow", "0 0 4px rgba(249, 168, 212, 0.7)" };
+    t.username.palette = {
+        "#F9A8D4", "#F472B6", "#38BDF8", "#34D399", "#A78BFA", "#FBBF24", "#FB7185", "#4ADE80"
+    };
+    t.username.effect = { "glow", "0 0 6px rgba(249, 168, 212, 0.75)", 6.0f, 0.75f, "#F9A8D4" };
 
     t.message_text.font = { "Montserrat Alternates", 16.0f, 400 };
-    t.message_text.color = "#E5E7EB";
-    t.message_text.effect = { "solid", "" };
+    t.message_text.color = "#F4F4F5";
+    t.message_text.effect = { "solid", "", 0.0f, 0.0f, "" };
 
     t.message_background.enabled = true;
-    t.message_background.color = "rgba(255, 255, 255, 0.02)";
+    t.message_background.color = "rgba(255, 255, 255, 0.03)";
     t.message_background.corner_radius = 15.0f;
-    t.message_background.padding = { 12.0f, 16.0f, 12.0f, 16.0f };
-    t.message_background.margin = { 10.0f, 0.0f, 10.0f, 0.0f };
+    t.message_background.padding = { 10.0f, 14.0f, 10.0f, 14.0f };
+    t.message_background.margin = { 6.0f, 0.0f, 6.0f, 0.0f };
+
+    t.scrollbar.visible = false;
+    t.scrollbar.width = 6.0f;
+    t.scrollbar.color = "#F9A8D4";
+    t.scrollbar.corner_radius = 3.0f;
 
     SpecialEventConfig q;
     q.id = "question";
-    q.name = "Question Highlight";
+    q.name = "Question";
     q.enabled = true;
     q.trigger = { "contains_character", "?" };
     q.highlight.background_color = "rgba(249, 168, 212, 0.12)";
-    q.highlight.outline = { true, 2.0f, "solid", "#F472B6", "#F472B6" };
+    q.highlight.outline = { true, 1.5f, "solid", "#F472B6", "#F472B6" };
     q.highlight.corner_radius = 15.0f;
-    t.special_events = { q };
+    t.special_events.push_back(q);
 
     return t;
 }
@@ -806,28 +942,44 @@ StreamTheme StreamTheme::create_midnight_pink() {
 StreamTheme StreamTheme::create_cyberpunk_neon() {
     StreamTheme t;
     t.metadata.name = "Cyberpunk Neon";
-    t.metadata.author = "Antigravity";
+    t.metadata.author = "Vanced Converse";
     t.metadata.version = 1;
-    t.metadata.description = "Vibrant neon cyan & magenta aesthetic with glass reflection";
+    t.metadata.description = "High-contrast dark synthwave aesthetic with electrifying cyan and yellow glow.";
 
-    t.overlay.type = OverlayBgType::LiquidGlass;
-    t.overlay.color = "#0B0E17";
+    t.overlay.type = OverlayBgType::Acrylic;
+    t.overlay.color = "#08080C";
     t.overlay.opacity = 0.55f;
-    t.overlay.blur = 20.0f;
-    t.overlay.corner_radius = 18.0f;
+    t.overlay.blur = 24.0f;
+    t.overlay.corner_radius = 12.0f;
+    t.overlay.outline_enabled = true;
+    t.overlay.outline_size = 1.5f;
+    t.overlay.outline_color = "#00F0FF";
+    t.overlay.outline_glow_color = "#00F0FF";
+    t.overlay.outline_glow_blur = 4.0f;
+    t.overlay.padding = { 16.0f, 16.0f, 16.0f, 16.0f };
+    t.overlay.fade_edges = true;
+    t.overlay.fade_length = 28.0f;
 
-    t.username.font = { "Consolas", 15.0f, 700 };
+    t.username.font = { "Segoe UI", 16.0f, 700 };
     t.username.color_mode = UsernameColorMode::PersistentUserColor;
-    t.username.palette = { "#00F0FF", "#FF007F", "#FFE600", "#7928CA", "#00FF66" };
-    t.username.effect = { "glow", "0 0 6px rgba(0, 240, 255, 0.8)" };
+    t.username.color_value = "#FFE600";
+    t.username.palette = { "#00F0FF", "#FFE600", "#FF0055", "#7000FF", "#00FF66" };
+    t.username.effect = { "glow", "0 0 8px rgba(255, 230, 0, 0.85)", 8.0f, 0.85f, "#FFE600" };
 
     t.message_text.font = { "Segoe UI", 15.0f, 400 };
-    t.message_text.color = "#F0F6FC";
+    t.message_text.color = "#E0F8FF";
 
     t.message_background.enabled = true;
-    t.message_background.color = "rgba(18, 24, 38, 0.65)";
-    t.message_background.outline = { true, 1.0f, "solid", "#00F0FF", "#00F0FF" };
-    t.message_background.corner_radius = 10.0f;
+    t.message_background.color = "rgba(0, 240, 255, 0.05)";
+    t.message_background.corner_radius = 8.0f;
+    t.message_background.outline = { true, 1.0f, "solid", "rgba(0, 240, 255, 0.25)", "#00F0FF" };
+    t.message_background.padding = { 10.0f, 12.0f, 10.0f, 12.0f };
+    t.message_background.margin = { 8.0f, 0.0f, 8.0f, 0.0f };
+
+    t.scrollbar.visible = true;
+    t.scrollbar.width = 6.0f;
+    t.scrollbar.color = "#00F0FF";
+    t.scrollbar.corner_radius = 2.0f;
 
     return t;
 }
@@ -835,53 +987,74 @@ StreamTheme StreamTheme::create_cyberpunk_neon() {
 StreamTheme StreamTheme::create_frost_glass() {
     StreamTheme t;
     t.metadata.name = "Frost Glass";
-    t.metadata.author = "Antigravity";
+    t.metadata.author = "Vanced Converse";
     t.metadata.version = 1;
-    t.metadata.description = "Clean light translucent frosted ice theme";
+    t.metadata.description = "Ultra-clean translucent frosted glass with icy blue highlights.";
 
-    t.overlay.type = OverlayBgType::Acrylic;
-    t.overlay.color = "#E8EEF5";
-    t.overlay.opacity = 0.35f;
-    t.overlay.blur = 25.0f;
+    t.overlay.type = OverlayBgType::LiquidGlass;
+    t.overlay.color = "#0F172A";
+    t.overlay.opacity = 0.30f;
+    t.overlay.blur = 30.0f;
     t.overlay.corner_radius = 24.0f;
+    t.overlay.outline_enabled = true;
+    t.overlay.outline_size = 1.0f;
+    t.overlay.outline_color = "rgba(255, 255, 255, 0.20)";
+    t.overlay.padding = { 16.0f, 16.0f, 16.0f, 16.0f };
+    t.overlay.fade_edges = true;
+    t.overlay.fade_length = 36.0f;
 
-    t.username.font = { "Outfit", 15.0f, 600 };
+    t.username.font = { "Montserrat Alternates", 15.0f, 600 };
     t.username.color_mode = UsernameColorMode::PersistentUserColor;
-    t.username.palette = { "#0284C7", "#0D9488", "#4F46E5", "#D97706", "#DC2626" };
+    t.username.color_value = "#38BDF8";
+    t.username.palette = { "#38BDF8", "#818CF8", "#34D399", "#67E8F9" };
+    t.username.effect = { "glow", "0 0 5px rgba(56, 189, 248, 0.70)", 5.0f, 0.70f, "#38BDF8" };
 
-    t.message_text.font = { "Outfit", 15.0f, 400 };
-    t.message_text.color = "#0F172A";
+    t.message_text.font = { "Montserrat Alternates", 15.0f, 400 };
+    t.message_text.color = "#F8FAFC";
 
     t.message_background.enabled = true;
-    t.message_background.color = "rgba(255, 255, 255, 0.45)";
+    t.message_background.color = "rgba(255, 255, 255, 0.04)";
     t.message_background.corner_radius = 16.0f;
+    t.message_background.padding = { 10.0f, 14.0f, 10.0f, 14.0f };
+    t.message_background.margin = { 6.0f, 0.0f, 6.0f, 0.0f };
 
+    t.scrollbar.visible = false;
     return t;
 }
 
 StreamTheme StreamTheme::create_sunset_glow() {
     StreamTheme t;
     t.metadata.name = "Sunset Glow";
-    t.metadata.author = "Antigravity";
+    t.metadata.author = "Vanced Converse";
     t.metadata.version = 1;
-    t.metadata.description = "Warm orange & purple dusk gradient aesthetic";
+    t.metadata.description = "Warm twilight gradient with amber gold and deep orange radiance.";
 
     t.overlay.type = OverlayBgType::Acrylic;
-    t.overlay.color = "#1F121E";
-    t.overlay.opacity = 0.5f;
-    t.overlay.blur = 18.0f;
+    t.overlay.color = "#1A0F1A";
+    t.overlay.opacity = 0.45f;
+    t.overlay.blur = 22.0f;
     t.overlay.corner_radius = 20.0f;
+    t.overlay.outline_enabled = true;
+    t.overlay.outline_size = 1.0f;
+    t.overlay.outline_color = "rgba(251, 146, 60, 0.35)";
+    t.overlay.padding = { 16.0f, 16.0f, 16.0f, 16.0f };
+    t.overlay.fade_edges = true;
+    t.overlay.fade_length = 30.0f;
 
-    t.username.font = { "Segoe UI", 16.0f, 600 };
-    t.username.palette = { "#FB923C", "#F472B6", "#E879F9", "#FBBF24", "#F87171" };
-    t.username.effect = { "glow", "0 0 5px rgba(251, 146, 60, 0.7)" };
+    t.username.font = { "Montserrat Alternates", 16.0f, 600 };
+    t.username.color_mode = UsernameColorMode::PersistentUserColor;
+    t.username.color_value = "#FB923C";
+    t.username.palette = { "#FB923C", "#F43F5E", "#FBBF24", "#EC4899" };
+    t.username.effect = { "glow", "0 0 6px rgba(251, 146, 60, 0.80)", 6.0f, 0.80f, "#FB923C" };
 
-    t.message_text.font = { "Segoe UI", 15.0f, 400 };
-    t.message_text.color = "#FFF1F2";
+    t.message_text.font = { "Montserrat Alternates", 15.0f, 400 };
+    t.message_text.color = "#FFF7ED";
 
     t.message_background.enabled = true;
-    t.message_background.color = "rgba(255, 255, 255, 0.04)";
+    t.message_background.color = "rgba(251, 146, 60, 0.04)";
     t.message_background.corner_radius = 14.0f;
+    t.message_background.padding = { 10.0f, 14.0f, 10.0f, 14.0f };
+    t.message_background.margin = { 6.0f, 0.0f, 6.0f, 0.0f };
 
     return t;
 }
@@ -889,26 +1062,36 @@ StreamTheme StreamTheme::create_sunset_glow() {
 StreamTheme StreamTheme::create_monochrome() {
     StreamTheme t;
     t.metadata.name = "Monochrome Minimal";
-    t.metadata.author = "Antigravity";
+    t.metadata.author = "Vanced Converse";
     t.metadata.version = 1;
-    t.metadata.description = "Ultra sleek stealth black & white aesthetic";
+    t.metadata.description = "Minimalist stealth dark theme without saturated neon colors.";
 
-    t.overlay.type = OverlayBgType::Solid;
-    t.overlay.color = "#000000";
-    t.overlay.opacity = 0.6f;
-    t.overlay.blur = 0.0f;
-    t.overlay.corner_radius = 12.0f;
+    t.overlay.type = OverlayBgType::Acrylic;
+    t.overlay.color = "#0B0B0E";
+    t.overlay.opacity = 0.50f;
+    t.overlay.blur = 18.0f;
+    t.overlay.corner_radius = 16.0f;
+    t.overlay.outline_enabled = true;
+    t.overlay.outline_size = 1.0f;
+    t.overlay.outline_color = "rgba(255, 255, 255, 0.10)";
+    t.overlay.padding = { 16.0f, 16.0f, 16.0f, 16.0f };
+    t.overlay.fade_edges = true;
+    t.overlay.fade_length = 30.0f;
 
-    t.username.font = { "Segoe UI", 15.0f, 700 };
+    t.username.font = { "Montserrat Alternates", 15.0f, 600 };
     t.username.color_mode = UsernameColorMode::Single;
-    t.username.color_value = "#FFFFFF";
+    t.username.color_value = "#E4E4E7";
+    t.username.effect = { "solid", "", 0.0f, 0.0f, "" };
 
-    t.message_text.font = { "Segoe UI", 15.0f, 400 };
-    t.message_text.color = "#D1D5DB";
+    t.message_text.font = { "Montserrat Alternates", 15.0f, 400 };
+    t.message_text.color = "#A1A1AA";
+    t.message_text.effect = { "solid", "", 0.0f, 0.0f, "" };
 
     t.message_background.enabled = true;
-    t.message_background.color = "rgba(255, 255, 255, 0.06)";
-    t.message_background.corner_radius = 8.0f;
+    t.message_background.color = "rgba(255, 255, 255, 0.02)";
+    t.message_background.corner_radius = 12.0f;
+    t.message_background.padding = { 10.0f, 12.0f, 10.0f, 12.0f };
+    t.message_background.margin = { 6.0f, 0.0f, 6.0f, 0.0f };
 
     return t;
 }

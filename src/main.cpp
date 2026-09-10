@@ -11,8 +11,7 @@
 #include <memory>
 #include <filesystem>
 
-
-static const wchar_t* MAIN_MSG_CLASS = L"YT_Live_Chat_Main_Msg_Class";
+static const wchar_t* MAIN_MSG_CLASS = L"Vanced_Converse_Main_Msg_Class";
 
 static HWND g_hwnd_msg = NULL;
 static std::unique_ptr<OverlayWindow> g_overlay;
@@ -20,6 +19,10 @@ static std::unique_ptr<SettingsWindow> g_settings;
 static std::unique_ptr<TrayManager> g_tray;
 static std::unique_ptr<YouTubeEngine> g_engine;
 
+/**
+ * @brief Window procedure for the hidden message sink window.
+ * Handles system tray interactions and menu commands.
+ */
 LRESULT CALLBACK MainMsgWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
     switch (msg) {
         case WM_TRAY_NOTIFY: {
@@ -59,11 +62,11 @@ LRESULT CALLBACK MainMsgWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
                     break;
                 }
                 case IDM_TRAY_APPEARANCE: {
-                    if (g_settings) g_settings->show(1); // tab 1: Appearance
+                    if (g_settings) g_settings->show(1); // Appearance tab
                     break;
                 }
                 case IDM_TRAY_SETTINGS: {
-                    if (g_settings) g_settings->show(0); // tab 0: Stream
+                    if (g_settings) g_settings->show(0); // General settings tab
                     break;
                 }
                 case IDM_TRAY_QUIT: {
@@ -84,21 +87,28 @@ LRESULT CALLBACK MainMsgWndProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lpara
     return DefWindowProcW(hwnd, msg, wparam, lparam);
 }
 
+/**
+ * @brief Application entry point.
+ */
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow) {
+    (void)hPrevInstance;
+    (void)pCmdLine;
+    (void)nCmdShow;
+
     OleInitialize(NULL);
 
     ULONG_PTR gdi_token = 0;
     Gdiplus::GdiplusStartupInput gdi_in;
     Gdiplus::GdiplusStartup(&gdi_token, &gdi_in, NULL);
 
-    // 1. Single instance check & focus existing
-    HANDLE h_mutex = CreateMutexW(NULL, TRUE, L"Local\\YT_Live_Chat_Overlay_SingleInstance");
+    // 1. Single Instance Guard & Focus Existing
+    HANDLE h_mutex = CreateMutexW(NULL, TRUE, L"Local\\Vanced_Converse_SingleInstance");
     if (GetLastError() == ERROR_ALREADY_EXISTS) {
-        HWND h_existing = FindWindowW(MAIN_MSG_CLASS, L"YT_Live_Chat_Msg_Sink");
+        HWND h_existing = FindWindowW(MAIN_MSG_CLASS, L"Vanced_Converse_Msg_Sink");
         if (h_existing) {
             PostMessageW(h_existing, WM_COMMAND, IDM_TRAY_SETTINGS, 0);
         } else {
-            HWND h_settings = FindWindowW(L"YT_Live_Chat_Settings_Class", NULL);
+            HWND h_settings = FindWindowW(L"Vanced_Converse_Settings_Class", NULL);
             if (h_settings) {
                 ShowWindow(h_settings, SW_RESTORE);
                 SetForegroundWindow(h_settings);
@@ -114,20 +124,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
     g_config.load();
     AppConfig initial_cfg = g_config.get();
 
-    // 3. Register Hidden Message Window Class for Tray Routing
-
+    // 3. Register Hidden Message Window for Tray Dispatch
     WNDCLASSEXW wc = { sizeof(WNDCLASSEXW) };
     wc.lpfnWndProc = MainMsgWndProc;
     wc.hInstance = hInstance;
     wc.lpszClassName = MAIN_MSG_CLASS;
     RegisterClassExW(&wc);
 
-    g_hwnd_msg = CreateWindowExW(0, MAIN_MSG_CLASS, L"YT_Live_Chat_Msg_Sink", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
+    g_hwnd_msg = CreateWindowExW(0, MAIN_MSG_CLASS, L"Vanced_Converse_Msg_Sink", 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, hInstance, NULL);
 
     // 4. Initialize Overlay and Settings Windows
     g_overlay = std::make_unique<OverlayWindow>(hInstance);
     if (!g_overlay->create()) {
-        MessageBoxW(NULL, L"Failed to initialize overlay window.", L"Error", MB_OK | MB_ICONERROR);
+        MessageBoxW(NULL, L"Failed to initialize Vanced Converse overlay window.", L"Error", MB_OK | MB_ICONERROR);
         if (gdi_token) Gdiplus::GdiplusShutdown(gdi_token);
         OleUninitialize();
         return 1;
@@ -187,7 +196,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         }
     });
 
-    // 10. Start Polling Engine if credentials configured; always open settings window on direct launch
+    // 10. Start Polling Engine if credentials configured; show settings window on direct launch
     if (!initial_cfg.api_key.empty() && !initial_cfg.video_id.empty()) {
         g_engine->start(initial_cfg.api_key, initial_cfg.video_id, initial_cfg.poll_interval_sec);
     }
@@ -209,9 +218,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
         CloseHandle(h_mutex);
     }
 
-
     if (gdi_token) Gdiplus::GdiplusShutdown(gdi_token);
     OleUninitialize();
     return (int)msg.wParam;
 }
-

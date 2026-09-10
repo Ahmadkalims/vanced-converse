@@ -17,7 +17,7 @@
 
 void test_json_parsing();
 void test_url_parser();
-void test_theme();
+void test_secure_storage();
 void test_config();
 void test_unicode_multilingual();
 void test_emoji_segmentation();
@@ -61,7 +61,7 @@ void run_all_unit_tests_gui() {
         test_emoji_segmentation();
         test_theme_system();
         test_custom_emoji_cache();
-        test_theme();
+        test_secure_storage();
         SetWindowTextW(g_h_lbl_unit, L"Status: ALL 8 TEST MODULES PASSED (100% VERIFIED)");
     } catch (const std::exception& e) {
         std::wstring w_err(e.what(), e.what() + strlen(e.what()));
@@ -370,8 +370,8 @@ int main(int argc, char** argv) {
             test_theme_system();
             std::cout << "7. Testing Emoji Cache..." << std::endl;
             test_custom_emoji_cache();
-            std::cout << "8. Testing Legacy Themes..." << std::endl;
-            test_theme();
+            std::cout << "8. Testing DPAPI Secure Storage..." << std::endl;
+            test_secure_storage();
             std::cout << "========================================" << std::endl;
             std::cout << "  ALL 8 TEST MODULES PASSED (100%)      " << std::endl;
             std::cout << "========================================" << std::endl;

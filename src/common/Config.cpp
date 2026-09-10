@@ -1,6 +1,7 @@
 #include "Config.hpp"
 #include "SimpleJson.hpp"
 #include "ThemeManager.hpp"
+#include "SecureStorage.hpp"
 #include <shlobj.h>
 #include <filesystem>
 #include <fstream>
@@ -11,6 +12,9 @@ namespace fs = std::filesystem;
 
 ConfigManager g_config;
 
+/**
+ * @brief Parses YouTube video URL, embed link, short link, or raw ID.
+ */
 std::string AppConfig::extract_video_id(const std::string& input) {
     if (input.empty()) return "";
 
@@ -18,26 +22,31 @@ std::string AppConfig::extract_video_id(const std::string& input) {
     trimmed.erase(0, trimmed.find_first_not_of(" \t\r\n"));
     trimmed.erase(trimmed.find_last_not_of(" \t\r\n") + 1);
 
+    // Direct 11-char ID
     if (trimmed.length() == 11 && trimmed.find('/') == std::string::npos && trimmed.find('?') == std::string::npos) {
         return trimmed;
     }
 
+    // ?v=...
     std::regex v_param_regex(R"([?&]v=([a-zA-Z0-9_-]{11}))");
     std::smatch match;
     if (std::regex_search(trimmed, match, v_param_regex)) {
         return match[1].str();
     }
 
+    // youtube.com/live/...
     std::regex live_regex(R"(youtube\.com/live/([a-zA-Z0-9_-]{11}))");
     if (std::regex_search(trimmed, match, live_regex)) {
         return match[1].str();
     }
 
+    // youtu.be/...
     std::regex youtu_be_regex(R"(youtu\.be/([a-zA-Z0-9_-]{11}))");
     if (std::regex_search(trimmed, match, youtu_be_regex)) {
         return match[1].str();
     }
 
+    // youtube.com/embed/...
     std::regex embeds_regex(R"(youtube\.com/embed/([a-zA-Z0-9_-]{11}))");
     if (std::regex_search(trimmed, match, embeds_regex)) {
         return match[1].str();
@@ -48,9 +57,18 @@ std::string AppConfig::extract_video_id(const std::string& input) {
 
 ConfigManager::ConfigManager() {
     char app_data[MAX_PATH];
-    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_APPDATA, NULL, 0, app_data))) {
-        fs::path dir = fs::path(app_data) / "YT_Live_Chat_Overlay";
-        config_path_ = (dir / "config.json").string();
+    if (SUCCEEDED(SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, app_data))) {
+        fs::path modern_dir = fs::path(app_data) / "VancedConverse";
+        config_path_ = (modern_dir / "config.json").string();
+
+        // Check if legacy config exists and migrate if needed
+        fs::path legacy_dir = fs::path(app_data) / "YT_Live_Chat_Overlay";
+        if (!fs::exists(config_path_) && fs::exists(legacy_dir / "config.json")) {
+            try {
+                fs::create_directories(modern_dir);
+                fs::copy_file(legacy_dir / "config.json", config_path_, fs::copy_options::overwrite_existing);
+            } catch (...) {}
+        }
     } else {
         config_path_ = "config.json";
     }
@@ -68,12 +86,19 @@ void ConfigManager::ensure_config_dir() {
     } catch (...) {}
 }
 
+/**
+ * @brief Reads configuration from disk and loads API key securely from DPAPI.
+ */
 bool ConfigManager::load() {
     ensure_config_dir();
     g_theme_manager.init();
 
+    // 1. Load API key from DPAPI secure storage
+    std::string secured_key = SecureStorage::load_api_key();
+
     std::ifstream file(config_path_);
     if (!file.is_open()) {
+        current_config_.api_key = secured_key;
         current_config_.theme = g_theme_manager.get_active_theme();
         save();
         return false;
@@ -85,12 +110,23 @@ bool ConfigManager::load() {
 
     json::Value root = json::parse(buffer.str());
     if (!root.is_object()) {
+        current_config_.api_key = secured_key;
         return false;
     }
 
     std::lock_guard<std::mutex> lock(config_mutex_);
 
-    current_config_.api_key = root["api_key"].as_string("");
+    // If DPAPI has key, use it; otherwise migrate plaintext key if present
+    if (!secured_key.empty()) {
+        current_config_.api_key = secured_key;
+    } else {
+        std::string plain_key = root["api_key"].as_string("");
+        if (!plain_key.empty()) {
+            current_config_.api_key = plain_key;
+            SecureStorage::save_api_key(plain_key);
+        }
+    }
+
     current_config_.video_id = root["video_id"].as_string("");
     current_config_.poll_interval_sec = root["poll_interval_sec"].as_int(15);
     current_config_.click_through = root["click_through"].as_bool(false);
@@ -115,13 +151,23 @@ bool ConfigManager::load() {
     return true;
 }
 
+/**
+ * @brief Saves configuration to disk with encrypted DPAPI credential storage.
+ */
 bool ConfigManager::save() {
     ensure_config_dir();
+
+    // 1. Securely encrypt API key using Windows DPAPI
+    {
+        std::lock_guard<std::mutex> lock(config_mutex_);
+        SecureStorage::save_api_key(current_config_.api_key);
+    }
 
     json::Value root = json::Value::object();
     {
         std::lock_guard<std::mutex> lock(config_mutex_);
-        root["api_key"] = current_config_.api_key;
+        // NEVER write plaintext api_key to config file
+        root["api_key"] = "";
         root["video_id"] = current_config_.video_id;
         root["poll_interval_sec"] = (double)current_config_.poll_interval_sec;
         root["click_through"] = current_config_.click_through;
@@ -180,7 +226,7 @@ void ConfigManager::notify_listeners() {
 
 std::string AppConfig::to_json_string(bool pretty) const {
     json::Value root = json::Value::object();
-    root["api_key"] = api_key;
+    root["api_key"] = ""; // Redacted in output
     root["video_id"] = video_id;
     root["poll_interval_sec"] = (double)poll_interval_sec;
     root["click_through"] = click_through;
@@ -195,7 +241,6 @@ bool AppConfig::from_json_string(const std::string& json_str) {
     json::Value root = json::parse(json_str);
     if (!root.is_object()) return false;
 
-    api_key = root["api_key"].as_string(api_key);
     video_id = root["video_id"].as_string(video_id);
     poll_interval_sec = root["poll_interval_sec"].as_int(poll_interval_sec);
     click_through = root["click_through"].as_bool(click_through);
@@ -205,4 +250,3 @@ bool AppConfig::from_json_string(const std::string& json_str) {
     active_theme_name = root["active_theme_name"].as_string(active_theme_name);
     return true;
 }
-

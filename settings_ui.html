@@ -596,21 +596,28 @@ body {
 /* ─── THEME GRID ─── */
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 .theme-card {
-  padding: 14px;
+  padding: 12px;
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   background: var(--bg-input);
   cursor: pointer;
   transition: all var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 .theme-card:hover { border-color: var(--accent); background: var(--bg-hover); }
-.theme-card.active { border-color: var(--accent); background: var(--accent-soft); }
-.theme-card h4 { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
-.theme-card p { font-size: 10px; color: var(--text-muted); margin: 0; }
+.theme-card.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 12px rgba(192, 132, 252, 0.2); }
+.theme-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.theme-card-title { font-size: 12px; font-weight: 600; color: var(--text); }
+.theme-badge { font-size: 9px; font-weight: 700; background: var(--accent); color: #1a0a2e; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+.theme-mini-preview { height: 46px; border-radius: 6px; margin: 6px 0; border: 1px solid rgba(255,255,255,0.08); padding: 5px 8px; font-size: 10px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.theme-card-actions { display: flex; gap: 4px; margin-top: 6px; }
+.dropzone.dragover { border-color: var(--accent) !important; background: var(--accent-soft) !important; }
 
 /* ─── EVENT LIST ─── */
 .event-row {
@@ -958,16 +965,16 @@ body {
 
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Saved Themes</div>
-              <div class="card-desc">Click any theme card to load and apply immediately.</div>
+              <div class="card-title">Theme Library</div>
+              <div class="card-desc">Click any card to apply. Use action buttons to duplicate, export or delete.</div>
             </div>
             <div style="padding:0 20px 16px">
+              <div id="dropzone" class="dropzone" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 16px; text-align: center; margin-bottom: 14px; cursor: pointer; transition: all var(--transition);">
+                <div style="font-size: 13px; font-weight: 500; color: var(--text);">📂 Drag & Drop CSS files here to import</div>
+                <div style="font-size: 11px; color: var(--text-muted); margin-top: 3px;">or click to browse from computer</div>
+              </div>
               <div class="theme-grid" id="themesgrid">
-                <div class="theme-card active" data-theme="Midnight_Pink"><h4>Midnight Pink</h4><p>Dark acrylic + pink accent.</p></div>
-                <div class="theme-card" data-theme="Cyberpunk_Neon"><h4>Cyberpunk Neon</h4><p>High-contrast cyan & yellow.</p></div>
-                <div class="theme-card" data-theme="Frost_Glass"><h4>Frost Glass</h4><p>Translucent frosted glass.</p></div>
-                <div class="theme-card" data-theme="Sunset_Glow"><h4>Sunset Glow</h4><p>Warm orange & purple gradient.</p></div>
-                <div class="theme-card" data-theme="Monochrome_Minimal"><h4>Monochrome Minimal</h4><p>Clean monochromatic dark.</p></div>
+                <!-- Populated dynamically from available_themes -->
               </div>
             </div>
           </div>
@@ -1040,6 +1047,44 @@ body {
           <div class="setting-info"><div class="setting-label">Corner Radius</div></div>
           <div class="setting-control">
             <div class="slider-group"><input id="radius" type="range" min="0" max="50" value="20"><span class="slider-value">20px</span></div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="section-title">Viewport Padding & Edge Fading</div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Padding (Top & Bottom)</div>
+            <div class="setting-hint">Gap between overlay edges and message stream</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="ovpad_tb" type="range" min="0" max="60" value="16"><span class="slider-value">16px</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Padding (Left & Right)</div>
+            <div class="setting-hint">Side margin spacing from container boundary</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="ovpad_lr" type="range" min="0" max="60" value="16"><span class="slider-value">16px</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <div class="setting-label">Smooth Vertical Edge Fading</div>
+            <div class="setting-hint">Fades messages at top and bottom edges so text doesn't cut off abruptly</div>
+          </div>
+          <div class="setting-control">
+            <label class="toggle"><input id="ovfade" type="checkbox" checked><span class="toggle-track"></span></label>
+          </div>
+        </div>
+        <div class="setting-row" id="ovfade_len_row">
+          <div class="setting-info">
+            <div class="setting-label">Fade Length</div>
+            <div class="setting-hint">Height of the alpha gradient dissolve region in pixels</div>
+          </div>
+          <div class="setting-control">
+            <div class="slider-group"><input id="ovfade_len" type="range" min="8" max="80" value="32"><span class="slider-value">32px</span></div>
           </div>
         </div>
         <div class="divider"></div>
@@ -1162,15 +1207,21 @@ body {
         </div>
         <div id="uglow">
           <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="ugc" type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
             <div class="setting-info"><div class="setting-label">Glow Radius</div></div>
             <div class="setting-control">
-              <div class="slider-group"><input id="ugr" type="range" min="0" max="30" value="5"><span class="slider-value">5px</span></div>
+              <div class="slider-group"><input id="ugr" type="range" min="0" max="30" value="6"><span class="slider-value">6px</span></div>
             </div>
           </div>
           <div class="setting-row">
             <div class="setting-info"><div class="setting-label">Glow Intensity</div></div>
             <div class="setting-control">
-              <div class="slider-group"><input id="ugi" type="range" min="0" max="100" value="80"><span class="slider-value">80%</span></div>
+              <div class="slider-group"><input id="ugi" type="range" min="0" max="100" value="75"><span class="slider-value">75%</span></div>
             </div>
           </div>
         </div>
@@ -1208,6 +1259,35 @@ body {
           <div class="setting-info"><div class="setting-label">Text Opacity</div></div>
           <div class="setting-control">
             <div class="slider-group"><input id="mop" type="range" min="0" max="100" value="100"><span class="slider-value">100%</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-info"><div class="setting-label">Text Glow Effect</div></div>
+          <div class="setting-control">
+            <div class="seg-control" data-g="me">
+              <button class="seg-btn active" data-v="none">None</button>
+              <button class="seg-btn" data-v="glow">Glow</button>
+            </div>
+          </div>
+        </div>
+        <div id="mglow" class="hidden">
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Color</div></div>
+            <div class="setting-control">
+              <div class="color-input"><input id="mgc" type="color" value="#f9a8d4"><span class="color-hex">#F9A8D4</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Radius</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="mgr" type="range" min="0" max="30" value="4"><span class="slider-value">4px</span></div>
+            </div>
+          </div>
+          <div class="setting-row">
+            <div class="setting-info"><div class="setting-label">Glow Intensity</div></div>
+            <div class="setting-control">
+              <div class="slider-group"><input id="mgi" type="range" min="0" max="100" value="50"><span class="slider-value">50%</span></div>
+            </div>
           </div>
         </div>
       </div>
@@ -1680,20 +1760,46 @@ function updatePreview() {
 
   const bw = +(document.getElementById('obw')?.value || 1);
   const bc = document.getElementById('obc')?.value || '#ffffff';
-  const bop = (+(document.getElementById('obop')?.value || 20)) / 100;
   p.style.borderWidth = segVal('oborder') === 'none' ? '0' : bw + 'px';
   p.style.borderColor = segVal('oborder') === 'none' ? 'transparent' : bc;
+
+  // Viewport padding
+  const padTB = +(document.getElementById('ovpad_tb')?.value || 16);
+  const padLR = +(document.getElementById('ovpad_lr')?.value || 16);
+  p.style.padding = `${padTB}px ${padLR}px`;
+
+  // Edge Fading Mask Simulation
+  const fadeOn = document.getElementById('ovfade')?.checked ?? true;
+  const fadeLen = +(document.getElementById('ovfade_len')?.value || 32);
+  if (fadeOn) {
+    p.style.webkitMaskImage = `linear-gradient(to bottom, transparent 0px, black ${fadeLen}px, black calc(100% - ${fadeLen}px), transparent 100%)`;
+    p.style.maskImage = `linear-gradient(to bottom, transparent 0px, black ${fadeLen}px, black calc(100% - ${fadeLen}px), transparent 100%)`;
+  } else {
+    p.style.webkitMaskImage = 'none';
+    p.style.maskImage = 'none';
+  }
+
+  // Glow parameters
+  const uglowOn = (segVal('ue') === 'glow');
+  const uGlowR = +(document.getElementById('ugr')?.value || 6);
+  const uGlowC = document.getElementById('ugc')?.value || '#f9a8d4';
+
+  const mglowOn = (segVal('me') === 'glow');
+  const mGlowR = +(document.getElementById('mgr')?.value || 4);
+  const mGlowC = document.getElementById('mgc')?.value || '#f9a8d4';
 
   document.querySelectorAll('.preview-msg').forEach(msg => {
     msg.style.fontSize = (document.getElementById('msize')?.value || 16) + 'px';
     msg.style.color = document.getElementById('mcolor')?.value || '#e5e7eb';
     msg.style.opacity = (+(document.getElementById('mop')?.value || 100)) / 100;
+    msg.style.textShadow = mglowOn ? `0 0 ${mGlowR}px ${mGlowC}` : 'none';
   });
 
   document.querySelectorAll('.preview-user').forEach((u, i) => {
     if (i === 0 || i === 2) {
       u.style.color = document.getElementById('ucolor')?.value || '#f9a8d4';
       u.style.fontSize = (document.getElementById('usize')?.value || 16) + 'px';
+      u.style.textShadow = uglowOn ? `0 0 ${uGlowR}px ${uGlowC}` : 'none';
     }
   });
 }
@@ -1720,56 +1826,98 @@ document.getElementById('add-event')?.addEventListener('click', () => {
 });
 document.querySelectorAll('.event-del').forEach(d => d.addEventListener('click', () => d.closest('.event-row')?.remove()));
 
-// ═══════ THEME PRESETS ═══════
-const themePresets = {
-  Midnight_Pink: { ovc:'#14141e', ovop:50, ovblur:15, radius:20, ucolor:'#f9a8d4', mcolor:'#e5e7eb', obc:'#f9a8d4' },
-  Cyberpunk_Neon: { ovc:'#0d1117', ovop:85, ovblur:8, radius:4, ucolor:'#00f0ff', mcolor:'#ffe600', obc:'#00f0ff' },
-  Frost_Glass: { ovc:'#0b1622', ovop:25, ovblur:24, radius:28, ucolor:'#7dd3fc', mcolor:'#f0f9ff', obc:'#38bdf8' },
-  Sunset_Glow: { ovc:'#180d1e', ovop:60, ovblur:16, radius:18, ucolor:'#fb923c', mcolor:'#fdf4ff', obc:'#f472b6' },
-  Monochrome_Minimal: { ovc:'#0a0a0c', ovop:75, ovblur:0, radius:8, ucolor:'#e4e4e7', mcolor:'#d4d4d8', obc:'#3f3f46' }
-};
-
-function applyPreset(name) {
-  const p = themePresets[name];
-  if (!p) return;
-  const setVal = (id, v) => { const el = document.getElementById(id); if (el) { el.value = v; el.dispatchEvent(new Event('input')); } };
-  setVal('ovc', p.ovc); setVal('ovop', p.ovop); setVal('ovblur', p.ovblur);
-  setVal('radius', p.radius); setVal('ucolor', p.ucolor); setVal('mcolor', p.mcolor); setVal('obc', p.obc);
-  document.querySelectorAll('.theme-card').forEach(t => t.classList.toggle('active', t.dataset.theme === name));
-  document.getElementById('themeselect').value = name;
-  updatePreview();
-  syncLivePreview();
+// ═══════ THEME MANAGEMENT ═══════
+function applyTheme(name) {
+  if (!name) return;
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: name }));
+  }
 }
 
-document.querySelectorAll('.theme-card').forEach(t => {
-  t.addEventListener('click', () => {
-    if (t.dataset.theme) {
-      applyPreset(t.dataset.theme);
-      if (window.chrome?.webview) {
-        window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: t.dataset.theme }));
-      }
+function duplicateTheme(name) {
+  const newName = prompt(`Enter duplicate name for "${name}":`, `${name} Copy`);
+  if (newName && window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'theme_duplicate', old_name: name, new_name: newName }));
+  }
+}
+
+function exportTheme(name) {
+  if (window.chrome?.webview) {
+    window.chrome.webview.postMessage(JSON.stringify({ type: 'export_theme', name: name }));
+  }
+}
+
+function deleteTheme(name) {
+  if (confirm(`Are you sure you want to delete theme "${name}"?`)) {
+    if (window.chrome?.webview) {
+      window.chrome.webview.postMessage(JSON.stringify({ type: 'theme_delete', name: name }));
+    }
+  }
+}
+
+function renderThemesGrid(themes, activeName) {
+  const grid = document.getElementById('themesgrid');
+  if (!grid || !Array.isArray(themes)) return;
+  grid.innerHTML = '';
+
+  themes.forEach(t => {
+    const isActive = (t.name === activeName);
+    const card = document.createElement('div');
+    card.className = 'theme-card' + (isActive ? ' active' : '');
+    card.dataset.theme = t.name;
+
+    card.innerHTML = `
+      <div class="theme-card-header">
+        <span class="theme-card-title">${t.name}</span>
+        ${isActive ? '<span class="theme-badge">Active</span>' : ''}
+      </div>
+      <div class="theme-mini-preview" style="background:${t.color || '#14141e'};">
+        <div style="color:${t.accent || '#f9a8d4'}; font-weight:600;">Viewer</div>
+        <div style="color:#e5e7eb; opacity:0.8;">Sample message</div>
+      </div>
+      <div class="theme-card-actions">
+        ${!isActive ? `<button class="btn btn-sm btn-primary" onclick="applyTheme('${t.name}')">Apply</button>` : ''}
+        <button class="btn btn-sm btn-ghost" onclick="duplicateTheme('${t.name}')" title="Duplicate">📑</button>
+        <button class="btn btn-sm btn-ghost" onclick="exportTheme('${t.name}')" title="Export">📤</button>
+        ${!['Midnight Pink', 'Cyberpunk Neon', 'Frost Glass', 'Sunset Glow', 'Monochrome Minimal'].includes(t.name) ?
+          `<button class="btn btn-sm btn-ghost" onclick="deleteTheme('${t.name}')" title="Delete">🗑️</button>` : ''}
+      </div>
+    `;
+
+    grid.appendChild(card);
+  });
+}
+
+// Drag & Drop CSS Import
+const dropzone = document.getElementById('dropzone');
+if (dropzone) {
+  dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      const file = files[0];
+      const reader = new FileReader();
+      reader.onload = ev => {
+        if (window.chrome?.webview) {
+          window.chrome.webview.postMessage(JSON.stringify({
+            type: 'theme_import_dragdrop',
+            name: file.name.replace(/\.css$/i, ''),
+            content: ev.target.result
+          }));
+        }
+      };
+      reader.readAsText(file);
     }
   });
-});
-
-document.getElementById('themeselect')?.addEventListener('change', e => {
-  applyPreset(e.target.value);
-  if (window.chrome?.webview) {
-    window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: e.target.value }));
-  }
-});
-
-document.getElementById('loadtheme-btn')?.addEventListener('click', () => {
-  const name = document.getElementById('themeselect')?.value;
-  if (name) {
-    applyPreset(name);
+  dropzone.addEventListener('click', () => {
     if (window.chrome?.webview) {
-      window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name }));
+      window.chrome.webview.postMessage(JSON.stringify({ type: 'import_theme' }));
     }
-  }
-  const btn = document.getElementById('loadtheme-btn');
-  if (btn) { btn.textContent = 'Loaded ✓'; setTimeout(() => btn.textContent = 'Load', 800); }
-});
+  });
+}
 
 document.getElementById('importtheme-btn')?.addEventListener('click', () => {
   if (window.chrome?.webview) {
@@ -1798,13 +1946,6 @@ document.getElementById('savetheme-btn')?.addEventListener('click', e => {
   }
 });
 
-document.getElementById('reset-btn')?.addEventListener('click', () => {
-  applyPreset('Midnight_Pink');
-  if (window.chrome?.webview) {
-    window.chrome.webview.postMessage(JSON.stringify({ type: 'load_theme', name: 'Midnight_Pink' }));
-  }
-});
-
 document.getElementById('update-video-btn')?.addEventListener('click', e => {
   e.target.textContent = '✓ Connected'; setTimeout(() => e.target.textContent = 'Update', 1000);
   if (window.chrome?.webview) {
@@ -1812,14 +1953,14 @@ document.getElementById('update-video-btn')?.addEventListener('click', e => {
   }
 });
 
-// Real-time live overlay sync
+// Real-time debounced live overlay sync
 let previewSyncTimer = null;
 function syncLivePreview() {
   if (!window.chrome?.webview) return;
   if (previewSyncTimer) clearTimeout(previewSyncTimer);
   previewSyncTimer = setTimeout(() => {
     window.chrome.webview.postMessage(JSON.stringify({ type: 'preview_update', ...collectConfig() }));
-  }, 50);
+  }, 40);
 }
 
 // ═══════ COLLECT CONFIG (for C++ bridge) ═══════
@@ -1841,6 +1982,19 @@ function collectConfig() {
   const alwaysontop = document.getElementById('qtop')?.checked ?? true;
   const showoverlay = document.getElementById('qshow')?.checked ?? true;
 
+  const ovpad_tb = +(document.getElementById('ovpad_tb')?.value || 16);
+  const ovpad_lr = +(document.getElementById('ovpad_lr')?.value || 16);
+  const ovfade = document.getElementById('ovfade')?.checked ?? true;
+  const ovfade_len = +(document.getElementById('ovfade_len')?.value || 32);
+
+  const uglow_r = +(document.getElementById('ugr')?.value || 6);
+  const uglow_i = (+(document.getElementById('ugi')?.value || 75)) / 100;
+  const uglow_c = document.getElementById('ugc')?.value || '#f9a8d4';
+
+  const mglow_r = +(document.getElementById('mgr')?.value || 4);
+  const mglow_i = (+(document.getElementById('mgi')?.value || 50)) / 100;
+  const mglow_c = document.getElementById('mgc')?.value || '#f9a8d4';
+
   return {
     video_id: yturl,
     api_key: ytkey,
@@ -1849,25 +2003,42 @@ function collectConfig() {
     click_through: clickthrough,
     always_on_top: alwaysontop,
     show_overlay: showoverlay,
-    overlay_opacity: ovop,
-    overlay_blur: ovblur,
-    overlay_radius: radius,
-    border_width: obw,
-    border_color: obc,
-    font_size: msize,
-    username_color: ucolor,
-    message_color: mcolor,
-    bg_color: ovc,
     theme: {
-      overlay_opacity: ovop,
-      overlay_blur: ovblur,
-      overlay_radius: radius,
-      border_width: obw,
-      border_color: obc,
-      font_size: msize,
-      username_color: ucolor,
-      message_color: mcolor,
-      bg_color: ovc
+      overlay: {
+        color: ovc,
+        opacity: ovop,
+        blur: ovblur,
+        cornerRadius: radius,
+        outline: {
+          enabled: (obw > 0),
+          size: obw,
+          color: obc
+        },
+        padding: { top: ovpad_tb, bottom: ovpad_tb, left: ovpad_lr, right: ovpad_lr },
+        fadeEdges: ovfade,
+        fadeLength: ovfade_len
+      },
+      username: {
+        color_value: ucolor,
+        font: { size: msize },
+        effect: {
+          type: (segVal('ue') === 'glow') ? 'glow' : 'solid',
+          glowRadius: uglow_r,
+          glowIntensity: uglow_i,
+          glowColor: uglow_c,
+          shadow: `0 0 ${uglow_r}px ${uglow_c}`
+        }
+      },
+      messageText: {
+        color: mcolor,
+        font: { size: msize },
+        effect: {
+          type: (segVal('me') === 'glow') ? 'glow' : 'solid',
+          glowRadius: mglow_r,
+          glowIntensity: mglow_i,
+          glowColor: mglow_c
+        }
+      }
     }
   };
 }
@@ -1886,39 +2057,51 @@ function applyConfig(cfg) {
   if (cfg.always_on_top != null) setCheck('qtop', cfg.always_on_top);
   if (cfg.show_overlay != null) setCheck('qshow', cfg.show_overlay);
 
-  if (cfg.active_theme) {
-    const ts = document.getElementById('themeselect');
-    if (ts) {
-      for (let i = 0; i < ts.options.length; i++) {
-        if (ts.options[i].value === cfg.active_theme || ts.options[i].text.includes(cfg.active_theme)) {
-          ts.selectedIndex = i;
-          break;
-        }
-      }
-    }
-    document.querySelectorAll('.theme-card').forEach(tc => {
-      tc.classList.toggle('active', tc.dataset.theme === cfg.active_theme);
-    });
+  if (cfg.available_themes && Array.isArray(cfg.available_themes)) {
+    renderThemesGrid(cfg.available_themes, cfg.active_theme);
   }
 
-  const th = cfg.theme || cfg;
+  const th = cfg.theme;
   if (th) {
-    if (th.overlay_opacity != null) {
-      const pct = Math.round(th.overlay_opacity * 100);
-      setVal('ovop', pct);
-      setVal('qop', pct);
+    if (th.overlay) {
+      if (th.overlay.opacity != null) {
+        const pct = Math.round(th.overlay.opacity * 100);
+        setVal('ovop', pct); setVal('qop', pct);
+      }
+      if (th.overlay.blur != null) {
+        setVal('ovblur', th.overlay.blur); setVal('qblur', th.overlay.blur);
+      }
+      if (th.overlay.cornerRadius != null) setVal('radius', th.overlay.cornerRadius);
+      if (th.overlay.outline) {
+        if (th.overlay.outline.size != null) setVal('obw', th.overlay.outline.size);
+        if (th.overlay.outline.color) setVal('obc', th.overlay.outline.color);
+      }
+      if (th.overlay.color) setVal('ovc', th.overlay.color);
+      if (th.overlay.padding) {
+        setVal('ovpad_tb', th.overlay.padding.top || 16);
+        setVal('ovpad_lr', th.overlay.padding.left || 16);
+      }
+      if (th.overlay.fadeEdges != null) setCheck('ovfade', th.overlay.fadeEdges);
+      if (th.overlay.fadeLength != null) setVal('ovfade_len', th.overlay.fadeLength);
     }
-    if (th.overlay_blur != null) {
-      setVal('ovblur', th.overlay_blur);
-      setVal('qblur', th.overlay_blur);
+    if (th.username) {
+      if (th.username.color_value) setVal('ucolor', th.username.color_value);
+      if (th.username.font && th.username.font.size != null) setVal('usize', th.username.font.size);
+      if (th.username.effect) {
+        if (th.username.effect.glowRadius != null) setVal('ugr', th.username.effect.glowRadius);
+        if (th.username.effect.glowIntensity != null) setVal('ugi', Math.round(th.username.effect.glowIntensity * 100));
+        if (th.username.effect.glowColor) setVal('ugc', th.username.effect.glowColor);
+      }
     }
-    if (th.overlay_radius != null) setVal('radius', th.overlay_radius);
-    if (th.border_width != null) setVal('obw', th.border_width);
-    if (th.border_color) setVal('obc', th.border_color);
-    if (th.font_size != null) setVal('msize', th.font_size);
-    if (th.username_color) setVal('ucolor', th.username_color);
-    if (th.message_color) setVal('mcolor', th.message_color);
-    if (th.bg_color) setVal('ovc', th.bg_color);
+    if (th.messageText) {
+      if (th.messageText.color) setVal('mcolor', th.messageText.color);
+      if (th.messageText.font && th.messageText.font.size != null) setVal('msize', th.messageText.font.size);
+      if (th.messageText.effect) {
+        if (th.messageText.effect.glowRadius != null) setVal('mgr', th.messageText.effect.glowRadius);
+        if (th.messageText.effect.glowIntensity != null) setVal('mgi', Math.round(th.messageText.effect.glowIntensity * 100));
+        if (th.messageText.effect.glowColor) setVal('mgc', th.messageText.effect.glowColor);
+      }
+    }
   }
 
   updateConditionals();
@@ -1943,6 +2126,15 @@ if (window.chrome?.webview) {
 updateConditionals();
 updatePreview();
 updateQuota();
+document.querySelectorAll('input[type="range"], input[type="color"]').forEach(el => {
+  el.addEventListener('input', syncLivePreview);
+});
+document.querySelectorAll('.seg-btn').forEach(el => {
+  el.addEventListener('click', syncLivePreview);
+});
+document.querySelectorAll('.toggle input').forEach(el => {
+  el.addEventListener('change', syncLivePreview);
+});
 </script>
 </body>
 </html>

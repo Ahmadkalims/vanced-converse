@@ -10,6 +10,10 @@
 #include <atomic>
 #include <windows.h>
 
+/**
+ * @brief Thread-safe theme manager with live directory scanning, CSS hot-reload file watching,
+ * and library CRUD operations (Apply, Edit, Duplicate, Rename, Export, Delete).
+ */
 class ThemeManager {
 public:
     using ThemeChangeCallback = std::function<void(const StreamTheme&)>;
@@ -47,6 +51,9 @@ public:
     bool import_theme_from_file(const std::string& file_path, std::string* out_error = nullptr);
     bool export_theme_to_file(const std::string& theme_name, const std::string& dest_path, std::string* out_error = nullptr);
     bool save_custom_theme(const StreamTheme& theme, std::string* out_error = nullptr);
+    bool duplicate_theme(const std::string& original_name, const std::string& new_name, std::string* out_error = nullptr);
+    bool rename_theme(const std::string& old_name, const std::string& new_name, std::string* out_error = nullptr);
+    bool delete_theme(const std::string& theme_name, std::string* out_error = nullptr);
 
     void add_change_listener(ThemeChangeCallback cb);
     void notify_listeners();

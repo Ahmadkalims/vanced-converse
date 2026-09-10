@@ -5,217 +5,128 @@
 #include <filesystem>
 #include <fstream>
 #include <sstream>
+#include <chrono>
 
 namespace fs = std::filesystem;
 
 ThemeManager g_theme_manager;
 
-static const char* TEMPLATE_STREAMTHEME_CONTENT = R"RAW(// ==============================================================================
-//  STREAMTHEME - COMPLETE CUSTOMIZATION TEMPLATE & CONFIGURATION GUIDE
-// ==============================================================================
-// This template demonstrates all available settings in the StreamTheme engine.
-// You can edit this file directly or copy and rename it to "YourTheme.streamtheme".
-//
-// INSTANT HOT-RELOAD: Whenever you edit and save this file, the overlay updates
-// live immediately on screen without restarting the app or using background CPU.
-// ==============================================================================
+static const char* TEMPLATE_CSS_CONTENT = R"RAW(/* ==============================================================================
+   VANCED CONVERSE — THEME CUSTOMIZATION TEMPLATE & SPECIFICATION
+   ==============================================================================
+   This template contains all available CSS variables driving the Vanced Converse
+   native overlay engine. Edit these values to customize colors, geometry,
+   glass blur effects, typography, animations, and event triggers.
 
-{
-  "schema_version": "1.0",
+   Save as "Your_Theme_Name.css" inside the themes/ directory for instant hot-reload.
+   ============================================================================== */
 
-  // ----------------------------------------------------------------------------
-  // THEME METADATA
-  // ----------------------------------------------------------------------------
-  "metadata": {
-    "name": "Custom Stream Theme Template",
-    "author": "Streamer / Designer",
-    "description": "Fully commented template explaining all theme options and values.",
-    "version": "1.0.0"
-  },
+/* Theme Metadata
+Theme Name: Custom Theme Template
+Author: Streamer
+Version: 1
+Description: Clean starter template demonstrating all overlay styling options.
+*/
 
-  // ----------------------------------------------------------------------------
-  // OVERLAY CONTAINER (Backdrop Material, Glass, Acrylic, Border, Radii)
-  // ----------------------------------------------------------------------------
-  "overlay": {
-    // Backdrop Type:
-    //  - "acrylic"     : Windows 11 Fluent Acrylic blur (saturate + noise + blur)
-    //  - "mica"        : Windows 11 Mica dynamic desktop-tinted material
-    //  - "liquid_glass": Deep glass morphism with specular glow highlight
-    //  - "transparent" : 100% transparent container (only message cards visible)
-    //  - "solid"       : Flat solid background color
-    "type": "acrylic",
+:root {
+    /* --------------------------------------------------------------------------
+       OVERLAY CONTAINER (Backdrop Material, Glass Blur, Opacity, Padding & Fading)
+       -------------------------------------------------------------------------- */
+    /* Container tint color: Hex (#RRGGBB, #RRGGBBAA) or rgba(r,g,b,a) */
+    --vc-overlay-bg-color: #14141E;
 
-    // Container Background Tint:
-    // Supports Hex (#RRGGBB, #RRGGBBAA), rgb(r,g,b), or rgba(r,g,b,a)
-    "color": "rgba(20, 20, 30, 0.45)",
+    /* Master container opacity: 0.0 (transparent) to 1.0 (opaque) */
+    --vc-overlay-bg-opacity: 0.40;
 
-    // Master Opacity: 0.0 (fully transparent) to 1.0 (fully opaque)
-    "opacity": 0.45,
+    /* Windows Acrylic / DWM glass blur radius in pixels (0px to 60px) */
+    --vc-overlay-bg-blur: 20px;
 
-    // Container Corner Radius in pixels (e.g. 0 for sharp, 20 for rounded)
-    "corner_radius": 20.0,
+    /* Window corner radius in pixels (clipping region is strictly matched) */
+    --vc-overlay-radius: 20px;
 
-    // Outer Container Border / Specular Rim
-    "outline_enabled": true,
-    "outline_color": "rgba(255, 255, 255, 0.15)",
-    "outline_size": 1.5,
+    /* Inner viewport padding around chat stream (gap between edges and messages) */
+    --vc-overlay-padding-top: 16px;
+    --vc-overlay-padding-bottom: 16px;
+    --vc-overlay-padding-left: 16px;
+    --vc-overlay-padding-right: 16px;
 
-    // Inner Padding around chat messages (in pixels)
-    "padding": {
-      "top": 16.0,
-      "bottom": 16.0,
-      "left": 16.0,
-      "right": 16.0
-    }
-  },
+    /* Edge fading: 1 = smooth vertical alpha dissolve at top and bottom edges */
+    --vc-overlay-fade-edges: 1;
 
-  // ----------------------------------------------------------------------------
-  // MESSAGE CARD (Background pill/card styling for each chat message)
-  // ----------------------------------------------------------------------------
-  "message_background": {
-    // Enable/disable individual message card bubbles (false = clean floating text)
-    "enabled": true,
+    /* Height of the vertical gradient edge fade mask in pixels */
+    --vc-overlay-fade-length: 32px;
 
-    // Card Background Color & Opacity
-    "color": "rgba(255, 255, 255, 0.03)",
+    /* Outer border and glow */
+    --vc-overlay-border-color: rgba(255, 255, 255, 0.12);
+    --vc-overlay-border-width: 1px;
+    --vc-overlay-glow-color: transparent;
+    --vc-overlay-glow-radius: 0px;
 
-    // Card Corner Curvature (in pixels)
-    "corner_radius": 15.0,
+    /* --------------------------------------------------------------------------
+       USERNAME STYLING (Typography, Colors, Glow/Text-Shadow)
+       -------------------------------------------------------------------------- */
+    /* Primary font family */
+    --vc-username-font: "Montserrat Alternates", sans-serif;
 
-    // Message Card Border Outline
-    "outline": {
-      "enabled": false,
-      "color": "rgba(255, 255, 255, 0.10)",
-      "size": 1.0
-    },
+    /* Font size in pixels (10px to 48px) */
+    --vc-username-size: 16px;
 
-    // Card Inner Padding
-    "padding": {
-      "top": 12.0,
-      "bottom": 12.0,
-      "left": 16.0,
-      "right": 16.0
-    },
+    /* Font weight (400 = Regular, 600 = SemiBold, 700 = Bold) */
+    --vc-username-weight: 600;
 
-    // Card Outer Margins (Spacing between consecutive messages)
-    "margin": {
-      "top": 6.0,
-      "bottom": 6.0,
-      "left": 0.0,
-      "right": 0.0
-    }
-  },
+    /* Default or static username color */
+    --vc-username-color: #F9A8D4;
 
-  // ----------------------------------------------------------------------------
-  // USERNAME STYLING
-  // ----------------------------------------------------------------------------
-  "username": {
-    // Typography
-    "font": {
-      "family": "Montserrat Alternates",  // Primary font (falls back to Segoe UI)
-      "size": 16.0,                       // Font size in pixels (10 to 48)
-      "weight": 600                       // 400 = Regular, 600 = SemiBold, 700 = Bold
-    },
+    /* Glow effect (mapped to CSS text-shadow: 0 0 <radius> <color>) */
+    --vc-username-glow-color: #F9A8D4;
+    --vc-username-glow-radius: 6px;
+    --vc-username-glow-intensity: 0.75;
 
-    // Placement: "inline" (Name: Message) or "above_message" (Name on top line)
-    "placement": "inline",
+    /* --------------------------------------------------------------------------
+       MESSAGE TEXT STYLING
+       -------------------------------------------------------------------------- */
+    --vc-message-font: "Montserrat Alternates", sans-serif;
+    --vc-message-size: 16px;
+    --vc-message-weight: 400;
+    --vc-message-color: #F4F4F5;
+    --vc-message-line-spacing: 0px;
+    --vc-message-glow-color: transparent;
+    --vc-message-glow-radius: 0px;
+    --vc-message-glow-intensity: 0.0;
 
-    // Username Visual Effect:
-    //  - "none" : Clean flat text
-    //  - "glow" : Soft neon aura matching the user's color
-    "effect": {
-      "type": "glow",
-      "radius": 4.0,
-      "color": "rgba(249, 168, 212, 0.70)"
-    },
+    /* --------------------------------------------------------------------------
+       MESSAGE BUBBLE / CARD
+       -------------------------------------------------------------------------- */
+    /* Set to transparent for floating clean text without pill background */
+    --vc-message-bg-color: rgba(255, 255, 255, 0.03);
+    --vc-message-radius: 15px;
+    --vc-message-border-color: transparent;
+    --vc-message-border-width: 0px;
+    --vc-message-padding-top: 10px;
+    --vc-message-padding-bottom: 10px;
+    --vc-message-padding-left: 14px;
+    --vc-message-padding-right: 14px;
 
-    // User Color Assignment Mode:
-    //  - "custom_palette" : Deterministic hash assigns distinct colors from list
-    //  - "author_color"   : Uses YouTube's official user role color
-    //  - "static"         : All usernames use the first color in palette
-    "color_mode": "custom_palette",
+    /* --------------------------------------------------------------------------
+       SCROLLBAR
+       -------------------------------------------------------------------------- */
+    --vc-scrollbar-width: 6px;
+    --vc-scrollbar-thumb-color: #F9A8D4;
+    --vc-scrollbar-radius: 3px;
 
-    // Color Palette for randomized/assigned usernames
-    "palette": [
-      "#f9a8d4",  // Rose Pink
-      "#38bdf8",  // Sky Blue
-      "#a78bfa",  // Violet
-      "#f472b6",  // Magenta
-      "#4ade80",  // Neon Green
-      "#fbbf24"   // Amber Gold
-    ]
-  },
+    /* --------------------------------------------------------------------------
+       MOTION & ANIMATIONS
+       -------------------------------------------------------------------------- */
+    --vc-motion-duration: 300ms;
+    --vc-motion-ease: cubic-bezier(0, 0, 0.2, 1);
 
-  // ----------------------------------------------------------------------------
-  // MESSAGE TEXT STYLING
-  // ----------------------------------------------------------------------------
-  "message_text": {
-    "font": {
-      "family": "Montserrat Alternates",  // Primary text font
-      "size": 16.0,                       // Text size in pixels
-      "weight": 400                       // 400 = Regular, 500 = Medium, 700 = Bold
-    },
-
-    // Primary Text Color
-    "color": "#e5e7eb",
-
-    // Extra line spacing (in pixels)
-    "line_spacing": 4.0,
-
-    // Text Glow Effect ("none" or "glow")
-    "effect": {
-      "type": "none",
-      "radius": 0.0,
-      "color": "rgba(0, 0, 0, 0)"
-    }
-  },
-
-  // ----------------------------------------------------------------------------
-  // SCROLLBAR STYLING
-  // ----------------------------------------------------------------------------
-  "scrollbar": {
-    "visible": false,                   // Always visible (true) or auto-hide (false)
-    "width": 6.0,                       // Scrollbar width in pixels
-    "track_color": "rgba(255, 255, 255, 0.05)",
-    "thumb_color": "rgba(244, 114, 182, 0.40)",
-    "thumb_hover_color": "rgba(244, 114, 182, 0.80)",
-    "corner_radius": 3.0,
-    // Interaction Mode: "auto", "always_visible", or "disabled"
-    "interaction_mode": "auto"
-  },
-
-  // ----------------------------------------------------------------------------
-  // ANIMATION EFFECTS
-  // ----------------------------------------------------------------------------
-  "animation": {
-    // Message Entrance Animation:
-    //  - "slide_up"   : Slides up smoothly into view
-    //  - "slide_down" : Slides down into view
-    //  - "fade_in"    : Fades in smoothly
-    //  - "none"       : Instant appearance
-    "entrance": "slide_up",
-    "duration_ms": 300,
-
-    // Auto-Scroll Behavior: "smooth", "instant", or "off"
-    "scroll_behavior": "smooth"
-  },
-
-  // ----------------------------------------------------------------------------
-  // SPECIAL EVENT HIGHLIGHTS (Questions, Superchats, Member alerts)
-  // ----------------------------------------------------------------------------
-  "special_events": [
-    {
-      "trigger": "question",  // Highlights messages ending with '?'
-      "highlight": {
-        "background_color": "rgba(249, 168, 212, 0.12)",
-        "outline": {
-          "enabled": true,
-          "color": "#f472b6",
-          "size": 2.0
-        }
-      }
-    }
-  ]
+    /* --------------------------------------------------------------------------
+       SPECIAL EVENTS
+       -------------------------------------------------------------------------- */
+    /* Question highlight trigger */
+    --vc-event-question-bg: rgba(249, 168, 212, 0.12);
+    --vc-event-question-border: #F472B6;
+    --vc-event-question-border-width: 1.5px;
 }
 )RAW";
 
@@ -225,13 +136,9 @@ static fs::path resolve_primary_themes_dir() {
     fs::path exe_dir = fs::path(exe_path).parent_path();
     fs::path p_exe_themes = exe_dir / "themes";
 
-    // If themes exists beside exe, use it
     if (fs::exists(p_exe_themes)) return p_exe_themes;
-
-    // Check current working directory ./themes
     if (fs::exists("themes")) return fs::absolute("themes");
 
-    // Otherwise default to exe_dir / "themes"
     return p_exe_themes;
 }
 
@@ -245,6 +152,10 @@ ThemeManager::~ThemeManager() {
     stop_file_watcher();
 }
 
+/**
+ * @brief Initializes the theme directory, writes default presets, scans files,
+ * and starts the live file watcher.
+ */
 void ThemeManager::init() {
     try {
         fs::create_directories(themes_dir_);
@@ -255,6 +166,9 @@ void ThemeManager::init() {
     start_file_watcher();
 }
 
+/**
+ * @brief Ensures all built-in CSS themes and the template CSS file exist on disk.
+ */
 void ThemeManager::ensure_default_themes() {
     auto write_css_if_missing = [this](const StreamTheme& theme, const std::string& filename) {
         fs::path p = fs::path(themes_dir_) / filename;
@@ -273,25 +187,30 @@ void ThemeManager::ensure_default_themes() {
     write_css_if_missing(StreamTheme::create_sunset_glow(), "Sunset_Glow.css");
     write_css_if_missing(StreamTheme::create_monochrome(), "Monochrome_Minimal.css");
 
-    // Also write template.css
+    // Template CSS with full documentation
     fs::path template_css_path = fs::path(themes_dir_) / "template.css";
     if (!fs::exists(template_css_path)) {
         std::ofstream out(template_css_path.string());
         if (out.is_open()) {
-            out << StreamTheme::create_midnight_pink().to_css_string();
+            out << TEMPLATE_CSS_CONTENT;
             out.close();
         }
     }
 }
 
+/**
+ * @brief Scans the themes directory for all .css and .streamtheme files and updates available_themes_.
+ */
 void ThemeManager::scan_themes_directory() {
     std::lock_guard<std::mutex> lock(mutex_);
     available_themes_.clear();
 
     try {
-        // 1. Scan .css files (first-class)
+        // 1. Scan modern .css files (first class format)
         for (const auto& entry : fs::directory_iterator(themes_dir_)) {
             if (entry.is_regular_file() && entry.path().extension() == ".css") {
+                if (entry.path().filename() == "template.css") continue; // Exclude template from selectable themes
+
                 std::ifstream in(entry.path().string());
                 if (in.is_open()) {
                     std::stringstream ss;
@@ -310,6 +229,8 @@ void ThemeManager::scan_themes_directory() {
         // 2. Scan legacy .streamtheme files if any
         for (const auto& entry : fs::directory_iterator(themes_dir_)) {
             if (entry.is_regular_file() && entry.path().extension() == ".streamtheme") {
+                if (entry.path().filename() == "template.streamtheme") continue;
+
                 std::ifstream in(entry.path().string());
                 if (in.is_open()) {
                     std::stringstream ss;
@@ -319,7 +240,6 @@ void ThemeManager::scan_themes_directory() {
                     StreamTheme t;
                     std::string err;
                     if (t.from_json_string(ss.str(), &err)) {
-                        // Check if theme with same name already added
                         bool exists = false;
                         for (const auto& existing : available_themes_) {
                             if (existing.metadata.name == t.metadata.name) {
@@ -340,57 +260,34 @@ void ThemeManager::scan_themes_directory() {
         available_themes_.push_back(StreamTheme::create_midnight_pink());
     }
 
-    // Set active if found by name, else fallback
-    bool found = false;
+    // Preserve active theme selection if found
     for (const auto& t : available_themes_) {
         if (t.metadata.name == active_theme_name_) {
             active_theme_ = t;
-            found = true;
-            break;
+            return;
         }
-    }
-
-    if (!found && !available_themes_.empty()) {
-        active_theme_ = available_themes_[0];
-        active_theme_name_ = active_theme_.metadata.name;
     }
 }
 
-
+/**
+ * @brief Sets the active theme by its display name.
+ */
 bool ThemeManager::set_active_theme_by_name(const std::string& name) {
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        bool found = false;
-
-        auto normalize = [](std::string s) -> std::string {
-            std::string out;
-            for (char c : s) {
-                if (c == '_' || c == '-' || c == ' ') continue;
-                out.push_back((char)::tolower((unsigned char)c));
-            }
-            if (out.size() >= 4 && out.substr(out.size() - 4) == ".css") {
-                out = out.substr(0, out.size() - 4);
-            }
-            return out;
-        };
-
-        std::string target = normalize(name);
-
-        for (const auto& t : available_themes_) {
-            if (t.metadata.name == name || normalize(t.metadata.name) == target) {
-                active_theme_ = t;
-                active_theme_name_ = t.metadata.name;
-                found = true;
-                break;
-            }
+    std::lock_guard<std::mutex> lock(mutex_);
+    for (const auto& t : available_themes_) {
+        if (t.metadata.name == name) {
+            active_theme_ = t;
+            active_theme_name_ = name;
+            notify_listeners();
+            return true;
         }
-        if (!found) return false;
     }
-
-    notify_listeners();
-    return true;
+    return false;
 }
 
+/**
+ * @brief Sets the active theme directly and notifies listeners.
+ */
 void ThemeManager::set_active_theme(const StreamTheme& theme) {
     {
         std::lock_guard<std::mutex> lock(mutex_);
@@ -400,119 +297,183 @@ void ThemeManager::set_active_theme(const StreamTheme& theme) {
     notify_listeners();
 }
 
+/**
+ * @brief Imports a .css or .streamtheme file into the themes library.
+ */
 bool ThemeManager::import_theme_from_file(const std::string& file_path, std::string* out_error) {
+    fs::path p(file_path);
+    if (!fs::exists(p)) {
+        if (out_error) *out_error = "File does not exist: " + file_path;
+        return false;
+    }
+
     std::ifstream in(file_path);
     if (!in.is_open()) {
-        if (out_error) *out_error = "Could not open source file: " + file_path;
+        if (out_error) *out_error = "Failed to open file: " + file_path;
         return false;
     }
 
-    std::stringstream ss;
-    ss << in.rdbuf();
+    std::stringstream buffer;
+    buffer << in.rdbuf();
     in.close();
 
-    std::string content = ss.str();
+    std::string content = buffer.str();
     StreamTheme imported_theme;
-    bool parsed = false;
+    bool success = false;
 
-    if (file_path.ends_with(".css") || content.find("--vc-") != std::string::npos || content.find(":root") != std::string::npos) {
-        parsed = imported_theme.from_css_string(content, out_error);
+    if (p.extension() == ".css") {
+        success = imported_theme.from_css_string(content, out_error);
     } else {
-        parsed = imported_theme.from_json_string(content, out_error);
+        success = imported_theme.from_json_string(content, out_error);
     }
 
-    if (!parsed) {
-        return false;
-    }
+    if (!success) return false;
 
-    // Save/copy into themes_dir_ as .css
-    std::string safe_name = imported_theme.metadata.name.empty() ? "Imported Theme" : imported_theme.metadata.name;
+    // Save as clean CSS in themes directory
+    std::string safe_name = imported_theme.metadata.name;
     for (char& c : safe_name) {
-        if (c == '\\' || c == '/' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+        if (c == ' ' || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|') {
             c = '_';
         }
     }
 
     fs::path dest = fs::path(themes_dir_) / (safe_name + ".css");
-    try {
-        std::ofstream out(dest.string());
-        if (out.is_open()) {
-            out << imported_theme.to_css_string();
-            out.close();
-        }
-    } catch (const std::exception& e) {
-        if (out_error) *out_error = std::string("Failed to save imported theme: ") + e.what();
+    std::ofstream out(dest.string());
+    if (!out.is_open()) {
+        if (out_error) *out_error = "Failed to write theme to: " + dest.string();
         return false;
     }
 
+    out << imported_theme.to_css_string();
+    out.close();
+
     scan_themes_directory();
-    set_active_theme_by_name(imported_theme.metadata.name);
     return true;
 }
 
+/**
+ * @brief Exports a theme from the library to a chosen file destination (.css).
+ */
 bool ThemeManager::export_theme_to_file(const std::string& theme_name, const std::string& dest_path, std::string* out_error) {
-    StreamTheme target;
+    StreamTheme theme_to_export;
+    bool found = false;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        bool found = false;
         for (const auto& t : available_themes_) {
             if (t.metadata.name == theme_name) {
-                target = t;
+                theme_to_export = t;
                 found = true;
                 break;
             }
         }
-        if (!found) {
-            target = active_theme_;
-        }
     }
 
-    try {
-        std::ofstream out(dest_path);
-        if (!out.is_open()) {
-            if (out_error) *out_error = "Could not create destination file: " + dest_path;
-            return false;
-        }
-        if (dest_path.ends_with(".css")) {
-            out << target.to_css_string();
-        } else {
-            out << target.to_json_string(true);
-        }
-        out.close();
-        return true;
-    } catch (const std::exception& e) {
-        if (out_error) *out_error = std::string("Export failed: ") + e.what();
+    if (!found) {
+        if (out_error) *out_error = "Theme not found: " + theme_name;
         return false;
     }
+
+    std::ofstream out(dest_path);
+    if (!out.is_open()) {
+        if (out_error) *out_error = "Could not open destination file for writing";
+        return false;
+    }
+
+    out << theme_to_export.to_css_string();
+    out.close();
+    return true;
 }
 
+/**
+ * @brief Saves an edited or newly created theme directly as a CSS file.
+ */
 bool ThemeManager::save_custom_theme(const StreamTheme& theme, std::string* out_error) {
-    std::string safe_name = theme.metadata.name.empty() ? "Custom Theme" : theme.metadata.name;
+    std::string safe_name = theme.metadata.name;
     for (char& c : safe_name) {
-        if (c == '\\' || c == '/' || c == ':' || c == '*' || c == '?' || c == '"' || c == '<' || c == '>' || c == '|') {
+        if (c == ' ' || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|') {
             c = '_';
         }
     }
 
     fs::path dest = fs::path(themes_dir_) / (safe_name + ".css");
-    try {
-        std::ofstream out(dest.string());
-        if (!out.is_open()) {
-            if (out_error) *out_error = "Could not open destination file: " + dest.string();
-            return false;
+    std::ofstream out(dest.string());
+    if (!out.is_open()) {
+        if (out_error) *out_error = "Failed to write theme file";
+        return false;
+    }
+
+    out << theme.to_css_string();
+    out.close();
+
+    scan_themes_directory();
+    return true;
+}
+
+/**
+ * @brief Duplicates an existing theme with a new name.
+ */
+bool ThemeManager::duplicate_theme(const std::string& original_name, const std::string& new_name, std::string* out_error) {
+    StreamTheme copy;
+    bool found = false;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        for (const auto& t : available_themes_) {
+            if (t.metadata.name == original_name) {
+                copy = t;
+                found = true;
+                break;
+            }
         }
-        out << theme.to_css_string();
-        out.close();
+    }
+
+    if (!found) {
+        if (out_error) *out_error = "Original theme not found: " + original_name;
+        return false;
+    }
+
+    copy.metadata.name = new_name;
+    return save_custom_theme(copy, out_error);
+}
+
+/**
+ * @brief Renames a theme in the library and updates its disk file.
+ */
+bool ThemeManager::rename_theme(const std::string& old_name, const std::string& new_name, std::string* out_error) {
+    if (duplicate_theme(old_name, new_name, out_error)) {
+        delete_theme(old_name, nullptr);
+        if (active_theme_name_ == old_name) {
+            set_active_theme_by_name(new_name);
+        }
+        return true;
+    }
+    return false;
+}
+
+/**
+ * @brief Deletes a theme file from the themes directory.
+ */
+bool ThemeManager::delete_theme(const std::string& theme_name, std::string* out_error) {
+    std::string safe_name = theme_name;
+    for (char& c : safe_name) {
+        if (c == ' ' || c == '/' || c == '\\' || c == ':' || c == '*' || c == '?' || c == '\"' || c == '<' || c == '>' || c == '|') {
+            c = '_';
+        }
+    }
+
+    fs::path css_path = fs::path(themes_dir_) / (safe_name + ".css");
+    fs::path streamtheme_path = fs::path(themes_dir_) / (safe_name + ".streamtheme");
+
+    try {
+        if (fs::exists(css_path)) fs::remove(css_path);
+        if (fs::exists(streamtheme_path)) fs::remove(streamtheme_path);
     } catch (const std::exception& e) {
-        if (out_error) *out_error = std::string("Save failed: ") + e.what();
+        if (out_error) *out_error = e.what();
         return false;
     }
 
     scan_themes_directory();
-    set_active_theme_by_name(theme.metadata.name);
     return true;
 }
-
 
 void ThemeManager::add_change_listener(ThemeChangeCallback cb) {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -520,73 +481,82 @@ void ThemeManager::add_change_listener(ThemeChangeCallback cb) {
 }
 
 void ThemeManager::notify_listeners() {
-    StreamTheme active_copy;
-    std::vector<ThemeChangeCallback> listeners_copy;
+    StreamTheme copy;
+    std::vector<ThemeChangeCallback> list_copy;
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        active_copy = active_theme_;
-        listeners_copy = listeners_;
+        copy = active_theme_;
+        list_copy = listeners_;
     }
-
-    for (const auto& cb : listeners_copy) {
-        if (cb) cb(active_copy);
+    for (const auto& cb : list_copy) {
+        if (cb) cb(copy);
     }
 }
 
+/**
+ * @brief Background thread monitoring the themes directory with 150ms debouncing.
+ */
 void ThemeManager::start_file_watcher() {
-    if (watcher_running_) return;
+    if (watcher_running_.load()) return;
 
-    h_stop_event_ = CreateEventW(NULL, TRUE, FALSE, NULL);
-    watcher_running_ = true;
+    h_stop_event_ = CreateEvent(NULL, TRUE, FALSE, NULL);
+    watcher_running_.store(true);
 
     watcher_thread_ = std::thread([this]() {
-        std::wstring w_dir = unicode::utf8_to_utf16(themes_dir_);
-        HANDLE h_change = FindFirstChangeNotificationW(
-            w_dir.c_str(),
-            FALSE,
-            FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_FILE_NAME
+        HANDLE h_dir = CreateFileA(
+            themes_dir_.c_str(),
+            FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS,
+            NULL
         );
 
-        if (h_change == INVALID_HANDLE_VALUE) {
-            watcher_running_ = false;
+        if (h_dir == INVALID_HANDLE_VALUE) {
+            watcher_running_.store(false);
             return;
         }
 
-        HANDLE handles[2] = { h_stop_event_, h_change };
+        BYTE buffer[1024];
+        DWORD bytes_returned = 0;
 
-        while (watcher_running_) {
-            // Kernel wait state: 0% CPU consumption
-            DWORD wait_res = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
-            if (wait_res == WAIT_OBJECT_0) {
-                break; // Stop event
-            }
-            if (wait_res == WAIT_OBJECT_0 + 1) {
-                // Debounce 100ms for file write to finish
-                Sleep(100);
+        while (watcher_running_.load()) {
+            if (ReadDirectoryChangesW(
+                h_dir, buffer, sizeof(buffer), FALSE,
+                FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_FILE_NAME,
+                &bytes_returned, NULL, NULL
+            )) {
+                // 150ms debounce
+                std::this_thread::sleep_for(std::chrono::milliseconds(150));
+
+                if (!watcher_running_.load()) break;
+
+                // Non-destructive reload of active theme
                 scan_themes_directory();
                 notify_listeners();
-                FindNextChangeNotification(h_change);
+            } else {
+                break;
             }
         }
 
-        FindCloseChangeNotification(h_change);
+        CloseHandle(h_dir);
+        watcher_running_.store(false);
     });
 }
 
 void ThemeManager::stop_file_watcher() {
-    if (!watcher_running_) return;
-    watcher_running_ = false;
-
-    if (h_stop_event_) {
-        SetEvent(h_stop_event_);
-    }
-
-    if (watcher_thread_.joinable()) {
-        watcher_thread_.join();
-    }
-
-    if (h_stop_event_) {
-        CloseHandle(h_stop_event_);
-        h_stop_event_ = NULL;
+    if (watcher_running_.load()) {
+        watcher_running_.store(false);
+        if (h_stop_event_) {
+            SetEvent(h_stop_event_);
+        }
+        if (watcher_thread_.joinable()) {
+            watcher_thread_.join();
+        }
+        if (h_stop_event_) {
+            CloseHandle(h_stop_event_);
+            h_stop_event_ = NULL;
+        }
     }
 }
