@@ -24,6 +24,23 @@ Optimize for producing the smallest amount of correct, maintainable code.
 
 ---
 
+# MODULAR SKILL ARCHITECTURE (.agents/skills/)
+
+All agents and subagents must follow **Progressive Disclosure**: read and apply only the specific skill files relevant to the files being edited.
+
+| Domain | Skill | Source / Standard | Trigger / When to Activate | Key Directives |
+|---|---|---|---|---|
+| **Core** | [ponytail.md](.agents/skills/core/ponytail.md) | [DietrichGebert/ponytail](https://github.com/dietrichgebert/ponytail) | Writing new code, adding features, choosing dependencies | Solution Ladder: Native APIs first -> Existing utils second -> Light deps third -> Custom code last. Avoid over-engineering. |
+| **Core** | [architecture.md](.agents/skills/core/architecture.md) | Clean Architecture & C++ Core Guidelines | Structuring files, classes, methods, or IPC boundaries | Max 35 lines/function, max 350 lines/file, max 3 levels nesting, strict typing, single responsibility. |
+| **Debugging** | [systematic-debugging.md](.agents/skills/debugging/systematic-debugging.md) | [obra/superpowers](https://github.com/obra/superpowers) | Diagnosing crashes, unexpected bugs, test failures | Iron Law: No fixes without root-cause investigation first. 4-phase diagnosis, 3-strike rule, defense-in-depth. |
+| **Performance** | [resource-efficiency.md](.agents/skills/performance/resource-efficiency.md) | [addyosmani/agent-skills](https://github.com/addyosmani/agent-skills) & Chromium | Overlay rendering, animation loops, memory profiling | 60 FPS animation budget, DOM message cap recycling, avoid layout thrashing, <1% idle CPU target. |
+| **Network** | [api-resilience.md](.agents/skills/network/api-resilience.md) | Google Cloud & Microsoft Cloud Resiliency | YouTube API polling, quota handling, network errors | Defensive quota throttling (default 10s), exponential backoff with full jitter, circuit breaker on 403 quota exhaustion. |
+| **Design** | [ui-ux-design.md](.agents/skills/design/ui-ux-design.md) | Microsoft Fluent & Modern Web Design Tokens | Styling, HTML, CSS tokens, themes, overlay layout | Anti-AI slop: 8pt spacing tokens, semantic contrast tiers, responsive margins, micro-interactions. |
+| **Testing** | [verification.md](.agents/skills/testing/verification.md) | TDD Standards & Verification Protocols | Verifying tasks, adding features, bug fixing | Never mark complete without proof: run tests (`run_tests.exe`), check runtime, capture visual proof. |
+| **Security** | [guardrails.md](.agents/skills/security/guardrails.md) | OWASP & Least-Privilege Security Standards | API keys, input handling, network, IPC | Zero hardcoded secrets, defensive YouTube quota throttling, XSS sanitization, error boundaries. |
+
+---
+
 # 1. PROJECT CONTEXT
 
 The current application:
