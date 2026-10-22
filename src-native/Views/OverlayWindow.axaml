@@ -1,0 +1,79 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VancedConverse.Core.ViewModels"
+        xmlns:m="using:VancedConverse.Core.Models"
+        xmlns:rendering="using:VancedConverse.Rendering"
+        x:Class="VancedConverse.Views.OverlayWindow"
+        x:Name="RootWindow"
+        Title="Vanced Converse Overlay"
+        Width="380" Height="650"
+        SystemDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        Topmost="True">
+
+    <Grid Margin="16">
+        <!-- Main Acrylic Glass Container with Controllable Glow & Corner Radius -->
+        <rendering:GlassPanel Background="{Binding WindowBackground}"
+                              BorderBrush="{Binding WindowBorderBrush}"
+                              BorderThickness="1.5"
+                              CornerRadius="{Binding WindowCornerRadius}"
+                              GlowColor="{Binding BorderGlowColor}"
+                              GlowRadius="{Binding BorderGlowRadius}"
+                              GlowIntensity="{Binding BorderGlowIntensity}">
+            
+            <Grid RowDefinitions="Auto,*">
+                <!-- Draggable Header Handle -->
+                <Grid Grid.Row="0" Margin="14,10,14,4" ColumnDefinitions="Auto,*,Auto" Background="Transparent" PointerPressed="OnHeaderPointerPressed">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="●" Foreground="#00e5ff" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Text="Vanced Converse" FontWeight="SemiBold" FontSize="12" Foreground="#88a0c0"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text="{Binding StreamStatus}" FontSize="11" Foreground="#607088" VerticalAlignment="Center"/>
+                </Grid>
+
+                <!-- Live Chat Message Stream with Edge Fade Cushioning -->
+                <ScrollViewer Grid.Row="1" Margin="10,4,10,12" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Messages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="m:ChatMessage">
+                                <Border Background="{Binding #RootWindow.DataContext.BubbleBackground}"
+                                        CornerRadius="{Binding #RootWindow.DataContext.BubbleCornerRadius}"
+                                        Margin="0,0,0,8"
+                                        Padding="12,10">
+                                    <StackPanel Spacing="4">
+                                        <!-- Author Row -->
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="{Binding AuthorName}"
+                                                       Foreground="{Binding #RootWindow.DataContext.AuthorBrush}"
+                                                       FontWeight="Bold"
+                                                       FontSize="{Binding #RootWindow.DataContext.FontSize}" />
+                                            <Border IsVisible="{Binding IsModerator}" Background="#00e5ff33" CornerRadius="4" Padding="4,1">
+                                                <TextBlock Text="MOD" Foreground="#00e5ff" FontSize="10" FontWeight="Bold"/>
+                                            </Border>
+                                            <Border IsVisible="{Binding IsSuperchat}" Background="#ffd70033" CornerRadius="4" Padding="4,1">
+                                                <TextBlock Text="{Binding SuperchatAmount}" Foreground="#ffd700" FontSize="10" FontWeight="Bold"/>
+                                            </Border>
+                                        </StackPanel>
+
+                                        <!-- Message Body with Stacked Glow & Stroke Rendering -->
+                                        <rendering:GlowTextBlock Text="{Binding MessageText}"
+                                                                 ForegroundBrush="{Binding #RootWindow.DataContext.MessageBrush}"
+                                                                 FontSize="{Binding #RootWindow.DataContext.FontSize}"
+                                                                 FontFamilyName="{Binding #RootWindow.DataContext.FontFamily}"
+                                                                 GlowEnabled="{Binding #RootWindow.DataContext.GlowEnabled}"
+                                                                 GlowColor="{Binding #RootWindow.DataContext.TextGlowColor}"
+                                                                 GlowRadius="{Binding #RootWindow.DataContext.TextGlowRadius}"
+                                                                 StrokeEnabled="{Binding #RootWindow.DataContext.StrokeEnabled}"
+                                                                 StrokeColor="{Binding #RootWindow.DataContext.StrokeColor}"
+                                                                 StrokeWidth="{Binding #RootWindow.DataContext.StrokeWidth}" />
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </rendering:GlassPanel>
+    </Grid>
+</Window>

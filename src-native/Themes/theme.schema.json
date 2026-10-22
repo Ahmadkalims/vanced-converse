@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VancedConverseStreamTheme",
+  "type": "object",
+  "required": ["schemaVersion", "name", "window", "messageBubble", "typography"],
+  "properties": {
+    "schemaVersion": { "type": "string", "default": "1.0.0" },
+    "name": { "type": "string" },
+    "author": { "type": "string" },
+    "description": { "type": "string" },
+    "extends": { "type": "string" },
+    "window": {
+      "type": "object",
+      "required": ["backgroundType", "backgroundColor", "cornerRadius", "opacity"],
+      "properties": {
+        "backgroundType": { "type": "string", "enum": ["solid", "gradient", "acrylic", "blur", "transparent"] },
+        "backgroundColor": { "type": "string", "pattern": "^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$" },
+        "gradient": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["linear", "radial"] },
+            "angle": { "type": "number", "default": 135 },
+            "stops": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["color", "offset"],
+                "properties": {
+                  "color": { "type": "string" },
+                  "offset": { "type": "number", "minimum": 0, "maximum": 1 }
+                }
+              }
+            }
+          }
+        },
+        "opacity": { "type": "number", "minimum": 0, "maximum": 1, "default": 0.85 },
+        "blurRadius": { "type": "number", "default": 20 },
+        "acrylicTint": { "type": "string", "default": "#181a24" },
+        "acrylicLuminosity": { "type": "number", "default": 0.7 },
+        "cornerRadius": { "type": "number", "minimum": 0, "maximum": 80, "default": 24 },
+        "borderWidth": { "type": "number", "default": 1.5 },
+        "borderColor": { "type": "string", "default": "#ff4b8c" },
+        "borderGradient": { "$ref": "#/properties/window/properties/gradient" },
+        "borderGlowColor": { "type": "string", "default": "#ff4b8c" },
+        "borderGlowRadius": { "type": "number", "default": 20 },
+        "borderGlowIntensity": { "type": "number", "default": 1.0 },
+        "padding": { "type": "number", "default": 16 },
+        "edgeFadeMargin": { "type": "number", "default": 20 }
+      }
+    },
+    "messageBubble": {
+      "type": "object",
+      "properties": {
+        "background": { "type": "string", "default": "#161b26" },
+        "opacity": { "type": "number", "default": 0.9 },
+        "cornerRadius": { "type": "number", "default": 16 },
+        "padding": { "type": "number", "default": 12 },
+        "margin": { "type": "number", "default": 6 },
+        "spacing": { "type": "number", "default": 8 },
+        "maxWidth": { "type": "number", "default": 420 },
+        "borderWidth": { "type": "number", "default": 1.0 },
+        "borderColor": { "type": "string", "default": "#2b3445" }
+      }
+    },
+    "typography": {
+      "type": "object",
+      "properties": {
+        "fontFamily": { "type": "string", "default": "Segoe UI Variable, Segoe UI, sans-serif" },
+        "fontSize": { "type": "number", "default": 14 },
+        "fontWeight": { "type": "string", "default": "Normal" },
+        "lineHeight": { "type": "number", "default": 1.4 },
+        "authorColor": { "type": "string", "default": "#ff79b0" },
+        "messageColor": { "type": "string", "default": "#ffffff" },
+        "modBadgeColor": { "type": "string", "default": "#00e5ff" },
+        "superchatColor": { "type": "string", "default": "#ffd700" }
+      }
+    },
+    "textEffects": {
+      "type": "object",
+      "properties": {
+        "strokeEnabled": { "type": "boolean", "default": false },
+        "strokeWidth": { "type": "number", "default": 1.0 },
+        "strokeColor": { "type": "string", "default": "#000000" },
+        "glowEnabled": { "type": "boolean", "default": true },
+        "glowColor": { "type": "string", "default": "#ff4b8c" },
+        "glowRadius": { "type": "number", "default": 8 },
+        "glowIntensity": { "type": "number", "default": 0.8 },
+        "shadowEnabled": { "type": "boolean", "default": true },
+        "shadowColor": { "type": "string", "default": "#000000" },
+        "shadowBlur": { "type": "number", "default": 4 },
+        "shadowOffsetX": { "type": "number", "default": 0 },
+        "shadowOffsetY": { "type": "number", "default": 2 },
+        "gradientFillEnabled": { "type": "boolean", "default": false },
+        "gradientFill": { "$ref": "#/properties/window/properties/gradient" }
+      }
+    }
+  }
+}

@@ -22,3 +22,12 @@ EBWebView/
 .idea/
 Thumbs.db
 [Dd]esktop.ini
+
+# .NET build artifacts
+**/bin/
+**/obj/
+publish/
+
+*.dll
+*.pdb
+spike/**/publish_trimmed/

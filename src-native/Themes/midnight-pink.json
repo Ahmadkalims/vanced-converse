@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "Midnight Pink",
+  "author": "Vanced Converse Team",
+  "description": "Signature sleek dark acrylic theme with luminous magenta accent glows.",
+  "window": {
+    "backgroundType": "acrylic",
+    "backgroundColor": "#121622",
+    "opacity": 0.85,
+    "blurRadius": 25,
+    "acrylicTint": "#0e111a",
+    "acrylicLuminosity": 0.65,
+    "cornerRadius": 24,
+    "borderWidth": 1.5,
+    "borderColor": "#ff4b8c",
+    "borderGlowColor": "#ff4b8c",
+    "borderGlowRadius": 22,
+    "borderGlowIntensity": 1.0,
+    "padding": 16,
+    "edgeFadeMargin": 20
+  },
+  "messageBubble": {
+    "background": "#181d2b",
+    "opacity": 0.92,
+    "cornerRadius": 16,
+    "padding": 12,
+    "margin": 6,
+    "spacing": 8,
+    "maxWidth": 420,
+    "borderWidth": 1.0,
+    "borderColor": "#ff4b8c44"
+  },
+  "typography": {
+    "fontFamily": "Segoe UI Variable, Segoe UI, sans-serif",
+    "fontSize": 14,
+    "fontWeight": "Normal",
+    "lineHeight": 1.4,
+    "authorColor": "#ff79b0",
+    "messageColor": "#ffffff",
+    "modBadgeColor": "#00e5ff",
+    "superchatColor": "#ffd700"
+  },
+  "textEffects": {
+    "strokeEnabled": false,
+    "strokeWidth": 1.0,
+    "strokeColor": "#000000",
+    "glowEnabled": true,
+    "glowColor": "#ff4b8c",
+    "glowRadius": 8,
+    "glowIntensity": 0.75,
+    "shadowEnabled": true,
+    "shadowColor": "#000000aa",
+    "shadowBlur": 4,
+    "shadowOffsetX": 0,
+    "shadowOffsetY": 2,
+    "gradientFillEnabled": false
+  }
+}

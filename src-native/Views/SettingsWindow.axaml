@@ -1,0 +1,179 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:VancedConverse.Core.ViewModels"
+        xmlns:rendering="using:VancedConverse.Rendering"
+        x:Class="VancedConverse.Views.SettingsWindow"
+        x:DataType="vm:SettingsViewModel"
+        Title="Vanced Converse - Settings"
+        Width="780" Height="580"
+        WindowStartupLocation="CenterScreen"
+        Background="#0f1118">
+
+    <Grid ColumnDefinitions="220,*">
+        <!-- Sidebar Navigation -->
+        <Border Grid.Column="0" Background="#141722" BorderBrush="#1f2434" BorderThickness="0,0,1,0" Padding="16">
+            <StackPanel Spacing="12">
+                <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,0,0,16">
+                    <TextBlock Text="⚡" FontSize="18" VerticalAlignment="Center"/>
+                    <TextBlock Text="Vanced Converse" FontSize="15" FontWeight="Bold" Foreground="#ffffff" VerticalAlignment="Center"/>
+                </StackPanel>
+
+                <Button Content="🎨 Appearance &amp; Themes" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                        Background="#1e2335" Foreground="#ffffff" CornerRadius="8" Padding="12,10"/>
+                <Button Content="📺 YouTube Connection" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                        Background="Transparent" Foreground="#9aa8c0" CornerRadius="8" Padding="12,10"/>
+                <Button Content="⚙️ Window &amp; Behavior" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                        Background="Transparent" Foreground="#9aa8c0" CornerRadius="8" Padding="12,10"/>
+
+                <Border Height="1" Background="#1f2434" Margin="0,16"/>
+
+                <TextBlock Text="PRESETS" FontSize="11" FontWeight="Bold" Foreground="#607088" Margin="4,0,0,4"/>
+                <ComboBox ItemsSource="{Binding AvailableThemes}" SelectedItem="{Binding SelectedThemeName}"
+                          HorizontalAlignment="Stretch" CornerRadius="8"/>
+
+                <TextBlock Text="{Binding StatusFeedback}" FontSize="11" Foreground="#4ade80" TextWrapping="Wrap" Margin="4,16,4,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <ScrollViewer Grid.Column="1" Padding="28,20">
+            <StackPanel Spacing="24">
+                <!-- Header -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Appearance Customization" FontSize="20" FontWeight="Bold" Foreground="#ffffff"/>
+                    <TextBlock Text="Controllable Acrylic/Mica parameters, text glows, and rounded corners with instant Live Preview." FontSize="13" Foreground="#8899b0"/>
+                </StackPanel>
+
+                <!-- Section: Window & Acrylic Blur -->
+                <Border Background="#161a26" CornerRadius="12" Padding="18" BorderBrush="#222738" BorderThickness="1">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Window Glass &amp; Border Effects" FontWeight="SemiBold" FontSize="14" Foreground="#e0e8f5"/>
+
+                        <!-- Corner Radius Slider -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="Corner Radius" Foreground="#cad4e5" FontSize="13"/>
+                                <TextBlock Text="Adjust curvature of overlay boundaries (0px to 60px)" Foreground="#708098" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="0" Maximum="60" Value="{Binding WindowCornerRadius}"/>
+                                <TextBlock Text="{Binding WindowCornerRadius, StringFormat='{}{0:F0}px'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Window Opacity Slider -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="Window Transparency / Opacity" Foreground="#cad4e5" FontSize="13"/>
+                                <TextBlock Text="Per-pixel alpha blending level" Foreground="#708098" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="0.1" Maximum="1.0" Value="{Binding WindowOpacity}"/>
+                                <TextBlock Text="{Binding WindowOpacity, StringFormat='{}{0:P0}'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Border Glow Radius -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="Border Glow Radius" Foreground="#cad4e5" FontSize="13"/>
+                                <TextBlock Text="Diffusion spread of the accent border glow" Foreground="#708098" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="0" Maximum="50" Value="{Binding BorderGlowRadius}"/>
+                                <TextBlock Text="{Binding BorderGlowRadius, StringFormat='{}{0:F0}px'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Border Glow Intensity -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="Border Glow Intensity" Foreground="#cad4e5" FontSize="13"/>
+                                <TextBlock Text="Luminosity multiplier for outer glow" Foreground="#708098" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="0.0" Maximum="2.0" Value="{Binding BorderGlowIntensity}"/>
+                                <TextBlock Text="{Binding BorderGlowIntensity, StringFormat='{}{0:F1}x'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: Message Bubbles & Typography -->
+                <Border Background="#161a26" CornerRadius="12" Padding="18" BorderBrush="#222738" BorderThickness="1">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="Chat Typography &amp; Text Glow Effects" FontWeight="SemiBold" FontSize="14" Foreground="#e0e8f5"/>
+
+                        <!-- Font Size -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Font Size" Foreground="#cad4e5" FontSize="13" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="10" Maximum="24" Value="{Binding FontSize}"/>
+                                <TextBlock Text="{Binding FontSize, StringFormat='{}{0:F0}pt'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Bubble Corner Radius -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Message Bubble Radius" Foreground="#cad4e5" FontSize="13" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="0" Maximum="32" Value="{Binding BubbleCornerRadius}"/>
+                                <TextBlock Text="{Binding BubbleCornerRadius, StringFormat='{}{0:F0}px'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Text Glow Toggle -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Enable Text Shadow &amp; Glow" Foreground="#cad4e5" FontSize="13" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding GlowEnabled}"/>
+                        </Grid>
+
+                        <!-- Text Stroke Toggle -->
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="Enable High-Contrast Text Outline / Stroke" Foreground="#cad4e5" FontSize="13" VerticalAlignment="Center"/>
+                            <ToggleSwitch Grid.Column="1" IsChecked="{Binding StrokeEnabled}"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Section: YouTube Live Stream Settings -->
+                <Border Background="#161a26" CornerRadius="12" Padding="18" BorderBrush="#222738" BorderThickness="1">
+                    <StackPanel Spacing="14">
+                        <TextBlock Text="YouTube Live Connection" FontWeight="SemiBold" FontSize="14" Foreground="#e0e8f5"/>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="API Key (Encrypted via Windows DPAPI)" Foreground="#cad4e5" FontSize="12"/>
+                            <TextBox PasswordChar="●" Text="{Binding ApiKey}" Watermark="Enter your Google Cloud YouTube Data API Key" CornerRadius="8"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="Live Stream Video URL or 11-char ID" Foreground="#cad4e5" FontSize="12"/>
+                            <TextBox Text="{Binding VideoIdOrUrl}" Watermark="https://www.youtube.com/watch?v=..." CornerRadius="8"/>
+                        </StackPanel>
+
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel>
+                                <TextBlock Text="Polling Interval (Quota Protection)" Foreground="#cad4e5" FontSize="13"/>
+                                <TextBlock Text="Default 10s protects daily YouTube quota" Foreground="#708098" FontSize="11"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Slider Width="180" Minimum="10" Maximum="60" Value="{Binding PollIntervalSec}"/>
+                                <TextBlock Text="{Binding PollIntervalSec, StringFormat='{}{0}s'}" Width="45" Foreground="#ffffff" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Action Buttons -->
+                        <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                            <Button Content="Connect &amp; Start Stream" Command="{Binding StartStreamCommand}"
+                                    Background="#ff4b8c" Foreground="#ffffff" FontWeight="SemiBold" CornerRadius="8" Padding="16,8"/>
+                            <Button Content="Stop Stream" Command="{Binding StopStreamCommand}"
+                                    Background="#252b3d" Foreground="#ffffff" CornerRadius="8" Padding="16,8"/>
+                            <Button Content="Save Settings (Two-Way Sync)" Command="{Binding SaveSettingsCommand}"
+                                    Background="#3b82f6" Foreground="#ffffff" CornerRadius="8" Padding="16,8"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

@@ -1,33 +1,31 @@
-# System Architecture & Technical Patterns
+# System Architecture & Technical Patterns: Native Windows App
 
 ## 1. High-Level Technology Stack
-- **Language / Standards**: C++20 (MSVC / MinGW-w64), HTML5 / CSS3 / ES6.
-- **Window Management**: Win32 API (`CreateWindowExW`, `DWMWA_SYSTEMBACKDROP_TYPE`, layered windows).
-- **Web Runtime**: Microsoft Edge WebView2 (Chromium embedded).
-- **Security / Storage**: Windows DPAPI (`CryptProtectData`, `CryptUnprotectData`) for credentials; JSON for non-sensitive configuration.
-- **Rendering Engine**: Dual pipeline: Direct GDI+ with DirectWrite fallback for overlay text/emojis, WebView2 for Fluent settings management.
+- **Framework / Runtime**: .NET 8 LTS (`net8.0-windows`), Avalonia UI 11.2.1 (Skia 2.88.8 rendering engine).
+- **Pattern**: MVVM with `CommunityToolkit.Mvvm` 8.4.2.
+- **Window Management**: Win32 Native Interop (`SetWindowLongPtr`, `SetWindowPos`, `WS_EX_TRANSPARENT`, `WS_EX_TOOLWINDOW`, `WS_EX_NOACTIVATE`).
+- **Rendering Pipeline**: Skia direct rasterization (`SkiaSharp`, `DrawingContext`, `FormattedText.BuildGeometry()`, `BoxShadows`).
+- **Security / Storage**: Windows DPAPI (`System.Security.Cryptography.ProtectedData`) with CurrentUser scope.
+- **Theming**: Trim-safe JSON Schema (`theme.schema.json`) with debounced `FileSystemWatcher` hot-reload.
 
-## 2. Key Architecture Boundaries
+## 2. Layered Architecture (`src-native/`)
 ```
-[YouTube Live API]
-        │
-        ▼ (HTTPS REST / WinINet)
-[YouTubeEngine] ──> [JSON Parser] ──> [ChatMessage Queue]
-                                                │
-                                                ▼
-                                      [OverlayWindow (Win32)]
-                                      ├── Unicode / Emoji Renderer
-                                      ├── DWM Composition / Acrylic
-                                      └── Custom CSS Engine
-                                                ▲
-                                                │ (IPC: JSON WebMessage)
-                                      [SettingsWindow (WebView2)]
-                                      └── settings_ui.html
+src-native/
+├── App/                → Entry point (Program.cs), App.axaml, DI composition root
+├── Core/
+│   ├── Models/         → ChatMessage, ThemeModel, AppConfig
+│   ├── Services/       → YouTubeChatService, ConfigService, SecureStorageService
+│   └── ViewModels/     → OverlayViewModel, SettingsViewModel
+├── Theming/            → ThemeManager, hot-reloader, fallback controller
+├── Rendering/          → GlowTextBlock (stacked outlines/glows), GlassPanel (acrylic/mica blur)
+├── Platform.Windows/   → Win32Interop (click-through, toolwindow, always-on-top)
+├── Themes/             → theme.schema.json, midnight-pink.json, minimal-glass.json, neon-glow.json
+├── Views/              → OverlayWindow.axaml, SettingsWindow.axaml
+└── Tests/              → xUnit unit tests (VancedConverse.Tests)
 ```
 
-## 3. Core Design Principles
-- **Progressive Disclosure**: Consult `.agents/skills/` selectively by domain before editing.
-- **Reuse First (Ponytail)**: Native APIs $\rightarrow$ Existing Code $\rightarrow$ Dependencies $\rightarrow$ Minimal Inline Code.
-- **Defensive API Quota Management**: Default 10s poll cycle (360 requests/hour), full jitter backoff, hard circuit-breaker on 403 quota exhaustion.
-- **Zero-Waste Overlay Footprint**: $<1\%$ idle CPU, capped DOM / message history buffers, no continuous GPU rendering when idle.
-- **Type Safety & Bounds Checking**: `enum class`, `const` correctness, smart pointers (`std::unique_ptr`), structured guard clauses with maximum 3 nesting levels.
+## 3. Why Avalonia + Skia Was Chosen
+Detailed in `.context/stack-decision.md`:
+1. **Per-Pixel Alpha Transparency**: Skia provides true alpha blending with zero black/white fringe on any background (unlike WinUI 3 which produces solid black frames on Windows 10 Build 19045).
+2. **Deep Text & Effect Customization**: Skia canvas enables stacked text outlines, multi-layer glow diffusions, and linear/radial gradient fills.
+3. **True Portability**: Single-file standalone publish (`Vanced Converse.exe`) without MSIX, Windows App SDK runtime installations, or administrator privileges.
